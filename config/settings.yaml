@@ -1,0 +1,69 @@
+# TickEye 基金监控配置文件
+
+# 飞书机器人配置
+feishu:
+  webhook_url: "https://open.feishu.cn/open-apis/bot/v2/hook/your-webhook-url"
+  secret: ""  # 可选：机器人密钥
+
+# 监控规则配置
+rules:
+  # 全市场跌幅监控：所有基金跌幅超过3%时预警
+  - type: "percentage_drop"
+    name: "全市场跌幅预警"
+    threshold: 3.0
+    fund_codes: []  # 空列表表示监控所有基金
+
+  # 重点基金跌幅监控：特定基金跌幅超过2%时预警
+  - type: "percentage_drop" 
+    name: "重点基金跌幅预警"
+    threshold: 2.0
+    fund_codes:
+      - "000001"  # 华夏成长混合
+      - "110022"  # 易方达消费行业股票
+      - "161725"  # 招商中证白酒指数
+      - "502010"  # 易方达沪深300医药ETF联接
+
+  # 特定基金净值阈值监控
+  - type: "price_threshold"
+    name: "白酒基金低位监控"
+    fund_code: "161725"
+    threshold: 0.8
+    operator: "below"  # below: 低于阈值时触发, above: 高于阈值时触发
+
+  # 另一个净值监控示例
+  - type: "price_threshold"
+    name: "医药基金高位监控" 
+    fund_code: "502010"
+    threshold: 1.5
+    operator: "above"
+
+# 监控调度配置
+schedule:
+  # 监控频率：每隔多少分钟检查一次
+  check_interval: 30
+  
+  # 工作时间：只在这个时间段内进行监控
+  work_hours:
+    start: "09:00"
+    end: "15:30"
+  
+  # 工作日：周一到周五监控（0=周一，6=周日）
+  work_days: [0, 1, 2, 3, 4]
+
+# 日志配置
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: "logs/tickeye.log"
+  max_size_mb: 10
+  backup_count: 5
+
+# 数据源配置
+data_source:
+  # 数据刷新间隔（分钟）
+  refresh_interval: 5
+  
+  # 超时设置（秒）
+  timeout: 30
+  
+  # 重试次数
+  retry_count: 3
