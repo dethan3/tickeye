@@ -214,6 +214,84 @@ class SimpleFundDataFetcher:
                 'record_count': len(self._cache[cache_type]) if cache_type in self._cache else 0
             }
         return info
+    
+    def get_fund_history_data(self, fund_code: str, period: str = "近1月") -> Optional[pd.DataFrame]:
+        """
+        获取指定基金的历史净值数据
+        
+        Args:
+            fund_code: 基金代码 (如 '270042')
+            period: 时间周期 ('近1周', '近1月', '近3月', '近6月', '近1年', '近2年', '近3年', '成立来')
+            
+        Returns:
+            pd.DataFrame: 包含日期、净值、涨跌幅等信息的历史数据
+        """
+        try:
+            logger.info(f"正在获取基金 {fund_code} 的历史净值数据...")
+            
+            # 使用 AKShare 获取基金历史净值数据
+            df = ak.fund_open_fund_info_em(fund=fund_code, indicator="历史净值")
+            
+            if df is not None and not df.empty:
+                # 数据清理和处理
+                df = df.copy()
+                
+                # 确保日期列存在并转换为日期格式
+                if '净值日期' in df.columns:
+                    df['净值日期'] = pd.to_datetime(df['净值日期'])
+                    df = df.sort_values('净值日期', ascending=False)  # 按日期降序排列
+                
+                # 计算每日涨跌幅（如果数据中没有的话）
+                if '单位净值' in df.columns and '日增长率' not in df.columns:
+                    df['单位净值'] = pd.to_numeric(df['单位净值'], errors='coerce')
+                    df['前日净值'] = df['单位净值'].shift(-1)
+                    df['计算涨跌幅'] = ((df['单位净值'] - df['前日净值']) / df['前日净值'] * 100).round(4)
+                
+                logger.info(f"成功获取基金 {fund_code} 的 {len(df)} 条历史数据")
+                return df
+            else:
+                logger.warning(f"基金 {fund_code} 的历史数据为空")
+                return None
+                
+        except Exception as e:
+            logger.error(f"获取基金 {fund_code} 历史数据失败: {e}")
+            return None
+    
+    def get_fund_daily_changes(self, fund_code: str, days: int = 30) -> Optional[pd.DataFrame]:
+        """
+        获取基金最近N天的每日涨跌幅度
+        
+        Args:
+            fund_code: 基金代码
+            days: 获取最近多少天的数据
+            
+        Returns:
+            pd.DataFrame: 包含日期和涨跌幅的数据
+        """
+        history_data = self.get_fund_history_data(fund_code)
+        
+        if history_data is None or history_data.empty:
+            return None
+        
+        # 取最近N天的数据
+        recent_data = history_data.head(days).copy()
+        
+        # 选择需要的列
+        columns_to_keep = ['净值日期', '单位净值']
+        if '日增长率' in recent_data.columns:
+            columns_to_keep.append('日增长率')
+        elif '计算涨跌幅' in recent_data.columns:
+            columns_to_keep.append('计算涨跌幅')
+        
+        result = recent_data[columns_to_keep].copy()
+        
+        # 重命名列以便统一使用
+        if '日增长率' in result.columns:
+            result = result.rename(columns={'日增长率': '涨跌幅(%)'})
+        elif '计算涨跌幅' in result.columns:
+            result = result.rename(columns={'计算涨跌幅': '涨跌幅(%)'})
+        
+        return result
 
 
 # 创建全局实例

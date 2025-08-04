@@ -60,6 +60,19 @@ tickeye/
 python main.py
 ```
 
+## 安装依赖包
+
+1. 确保在虚拟环境中
+`source tickeye_env/bin/activate`
+
+2. 升级 pip（推荐）
+`pip install --upgrade pip`
+
+3. 安装基础依赖
+`pip install -r requirements.txt`
+
+
+
 ---
 
 ## 📌 Future Plans
