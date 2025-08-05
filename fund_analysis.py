@@ -8,15 +8,11 @@ Date: 2025-08-04
 
 import sys
 import os
-import logging
 import pandas as pd
 import akshare as ak
 
 # 添加项目路径
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-from monitor.fetcher import SimpleFundDataFetcher
-from utils.logger import setup_logger
 
 # ==================== 基金配置加载函数 ====================
 def load_funds_config(config_file='funds_config.txt'):
@@ -47,28 +43,39 @@ def load_funds_config(config_file='funds_config.txt'):
                 
                 # 解析基金代码和名称
                 if '|' in line:
+                    # 格式：基金代码|基金名称
                     parts = line.split('|', 1)  # 只分割一次，防止名称中有 | 符号
                     if len(parts) == 2:
                         fund_code = parts[0].strip()
                         fund_name = parts[1].strip()
                         
-                        if fund_code and fund_name:
+                        if fund_code:
                             owned_funds.append(fund_code)
-                            fund_names[fund_code] = fund_name
+                            if fund_name:  # 如果提供了名称，使用配置的名称
+                                fund_names[fund_code] = fund_name
                         else:
-                            print(f"⚠️ 配置文件第 {line_num} 行格式错误：基金代码或名称为空")
+                            print(f"⚠️ 配置文件第 {line_num} 行格式错误：基金代码为空")
                     else:
-                        print(f"⚠️ 配置文件第 {line_num} 行格式错误：缺少分隔符 |")
+                        print(f"⚠️ 配置文件第 {line_num} 行格式错误：分隔符 | 使用不当")
                 else:
-                    print(f"⚠️ 配置文件第 {line_num} 行格式错误：缺少分隔符 |")
+                    # 只有基金代码的情况
+                    fund_code = line.strip()
+                    if fund_code and fund_code.isdigit():  # 简单验证基金代码格式
+                        owned_funds.append(fund_code)
+                        # 不在这里设置名称，让get_fund_name函数通过API获取
+                    else:
+                        print(f"⚠️ 配置文件第 {line_num} 行格式错误：'{fund_code}' 不是有效的基金代码")
     
     except FileNotFoundError:
         print(f"❌ 配置文件 {config_file} 不存在！")
-        print("请创建配置文件，格式如下：")
+        print("请创建配置文件，支持以下格式：")
         print("# TickEye 基金配置文件")
-        print("# 格式：基金代码|基金名称")
+        print("# 格式1：基金代码|基金名称")
         print("270042|广发纳指联接A")
         print("007360|易方达中短期美元债A")
+        print("# 格式2：只有基金代码（名称自动获取）")
+        print("001917")
+        print("006195")
         return [], {}
     
     except Exception as e:
@@ -84,11 +91,15 @@ def load_funds_config(config_file='funds_config.txt'):
 
 # 加载基金配置
 OWNED_FUNDS, FUND_NAMES = load_funds_config()
-# ============================================================
 
 def get_fund_name(fund_code: str) -> str:
     """
     获取基金全名
+    
+    优先级顺序：
+    1. 优先使用 akshare API 获取的基金名称（最准确）
+    2. 如果 API 获取失败，使用配置文件中的名称作为备选
+    3. 如果都失败，返回基金代码本身
     
     Args:
         fund_code: 基金代码
@@ -96,7 +107,7 @@ def get_fund_name(fund_code: str) -> str:
     Returns:
         str: 基金全名，如果获取失败则返回基金代码
     """
-    # 优先尝试从 akshare API 获取单个基金的名称
+    # 优先尝试从 akshare API 获取单个基金的名称（始终优先使用API数据）
     try:
         # 使用 fund_individual_basic_info_xq 获取单个基金的基本信息
         fund_info = ak.fund_individual_basic_info_xq(symbol=fund_code)

@@ -1,3 +1,6 @@
+# 忽略个人基金配置文件
+funds_config.txt
+
 # Python
 __pycache__/
 *.py[cod]
