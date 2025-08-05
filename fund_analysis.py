@@ -18,27 +18,72 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from monitor.fetcher import SimpleFundDataFetcher
 from utils.logger import setup_logger
 
-# ==================== 已购买基金配置区域 ====================
-# 请在下方列表中填入你已购买的基金代码（6位数字）
-OWNED_FUNDS = [
-    # 请在此处添加你的基金代码：
-    '270042',  # 广发纳指联接A
-    '007360',  # 易方达中短期美元债A
-    '007361',  # 易方达中短期美元债C
-    '001917',  # 招商量化精选股票A
-    '019670',  # 广发港股创新药ETF联接A 
-]
+# ==================== 基金配置加载函数 ====================
+def load_funds_config(config_file='funds_config.txt'):
+    """
+    从配置文件加载基金信息
+    
+    Args:
+        config_file: 配置文件路径，默认为 'funds_config.txt'
+        
+    Returns:
+        tuple: (基金代码列表, 基金名称字典)
+    """
+    # 获取配置文件的完整路径
+    if not os.path.isabs(config_file):
+        config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), config_file)
+    
+    owned_funds = []
+    fund_names = {}
+    
+    try:
+        with open(config_file, 'r', encoding='utf-8') as f:
+            for line_num, line in enumerate(f, 1):
+                line = line.strip()
+                
+                # 跳过空行和注释行
+                if not line or line.startswith('#'):
+                    continue
+                
+                # 解析基金代码和名称
+                if '|' in line:
+                    parts = line.split('|', 1)  # 只分割一次，防止名称中有 | 符号
+                    if len(parts) == 2:
+                        fund_code = parts[0].strip()
+                        fund_name = parts[1].strip()
+                        
+                        if fund_code and fund_name:
+                            owned_funds.append(fund_code)
+                            fund_names[fund_code] = fund_name
+                        else:
+                            print(f"⚠️ 配置文件第 {line_num} 行格式错误：基金代码或名称为空")
+                    else:
+                        print(f"⚠️ 配置文件第 {line_num} 行格式错误：缺少分隔符 |")
+                else:
+                    print(f"⚠️ 配置文件第 {line_num} 行格式错误：缺少分隔符 |")
+    
+    except FileNotFoundError:
+        print(f"❌ 配置文件 {config_file} 不存在！")
+        print("请创建配置文件，格式如下：")
+        print("# TickEye 基金配置文件")
+        print("# 格式：基金代码|基金名称")
+        print("270042|广发纳指联接A")
+        print("007360|易方达中短期美元债A")
+        return [], {}
+    
+    except Exception as e:
+        print(f"❌ 读取配置文件时出错：{str(e)}")
+        return [], {}
+    
+    if not owned_funds:
+        print("⚠️ 配置文件中没有找到有效的基金配置！")
+    else:
+        print(f"✅ 成功加载 {len(owned_funds)} 只基金配置")
+    
+    return owned_funds, fund_names
 
-# 基金名称映射表（手动配置，确保显示正确的基金名称）
-FUND_NAMES = {
-    '270042': '广发纳指联接A',
-    '007360': '易方达中短期美元债A', 
-    '007361': '易方达中短期美元债C',
-    '001917': '招商量化精选股票A',
-    '019670': '广发港股创新药ETF联接A',
-    # 请在此处添加更多基金的名称映射：
-    # '基金代码': '基金全名',
-}
+# 加载基金配置
+OWNED_FUNDS, FUND_NAMES = load_funds_config()
 # ============================================================
 
 def get_fund_name(fund_code: str) -> str:
@@ -51,37 +96,25 @@ def get_fund_name(fund_code: str) -> str:
     Returns:
         str: 基金全名，如果获取失败则返回基金代码
     """
-    # 优先使用手动配置的名称映射
+    # 优先尝试从 akshare API 获取单个基金的名称
+    try:
+        # 使用 fund_individual_basic_info_xq 获取单个基金的基本信息
+        fund_info = ak.fund_individual_basic_info_xq(symbol=fund_code)
+        if fund_info is not None and not fund_info.empty:
+            # 查找基金名称行
+            name_row = fund_info[fund_info['item'] == '基金名称']
+            if not name_row.empty:
+                fund_name = name_row['value'].iloc[0]
+                if fund_name and fund_name.strip():
+                    return fund_name.strip()
+        
+    except Exception as e:
+        # API 获取失败时，记录但不打印错误（避免过多输出）
+        pass
+    
+    # 如果 API 获取失败，则使用配置文件中的名称作为备选
     if fund_code in FUND_NAMES:
         return FUND_NAMES[fund_code]
-    
-    # 如果没有手动配置，尝试从数据源获取（简化版，减少错误输出）
-    try:
-        fetcher = SimpleFundDataFetcher()
-        
-        # 先尝试开放式基金
-        open_funds = fetcher.get_open_fund_data()
-        if open_funds is not None and not open_funds.empty:
-            # 检查实际的列名
-            columns = list(open_funds.columns)
-            
-            # 查找基金代码列和名称列
-            code_col = None
-            name_col = None
-            
-            for col in columns:
-                if '代码' in col or 'code' in col.lower():
-                    code_col = col
-                if '名称' in col or '简称' in col or 'name' in col.lower():
-                    name_col = col
-            
-            if code_col and name_col:
-                fund_info = open_funds[open_funds[code_col] == fund_code]
-                if not fund_info.empty:
-                    return fund_info[name_col].iloc[0]
-        
-    except Exception:
-        pass
     
     # 如果都失败了，返回基金代码
     return fund_code
@@ -223,7 +256,7 @@ def monitor_owned_funds(days: int = 1):
         days: 分析最近多少天的数据
     """
     print("🦉 TickEye 基金监测工具")
-    print("=" * 80)
+    print("=" * 100)
     
     if not OWNED_FUNDS:
         print("❌ 未配置任何基金代码！")
@@ -242,13 +275,13 @@ def monitor_owned_funds(days: int = 1):
         summary = get_fund_summary(fund_code, days)
         fund_summaries.append(summary)
     
-    print("\n" + "=" * 80)
+    print("\n" + "=" * 100)
     print("📊 已购买基金监测报告")
-    print("=" * 80)
+    print("=" * 100)
     
-    # 创建表格标题
-    print(f"{'基金代码':<8} {'基金名称':<20} {'最新日期':<12} {'单位净值':<10} {'涨跌幅':<10} {'趋势':<4} {'状态':<10}")
-    print("-" * 80)
+    # 创建表格标题 - 调整列宽以显示完整基金名称
+    print(f"{'基金代码':<8} {'基金名称':<35} {'最新日期':<12} {'单位净值':<10} {'涨跌幅':<10} {'趋势':<4} {'状态':<10}")
+    print("-" * 100)
     
     # 显示每只基金的数据
     total_funds = len(fund_summaries)
@@ -257,9 +290,13 @@ def monitor_owned_funds(days: int = 1):
     down_count = 0
     
     for summary in fund_summaries:
-        fund_name = summary['fund_name'][:18] + '..' if len(summary['fund_name']) > 20 else summary['fund_name']
+        # 移除名称截断逻辑，显示完整名称
+        fund_name = summary['fund_name']
+        # 如果名称太长，可以考虑在合适的位置换行，但不截断
+        if len(fund_name) > 35:
+            fund_name = fund_name[:32] + "..."
         
-        print(f"{summary['fund_code']:<8} {fund_name:<20} {summary['latest_date']:<12} {summary['net_value']:<10} {summary['change_pct']:<10} {summary['trend']:<4} {summary['status']:<10}")
+        print(f"{summary['fund_code']:<8} {fund_name:<35} {summary['latest_date']:<12} {summary['net_value']:<10} {summary['change_pct']:<10} {summary['trend']:<4} {summary['status']:<10}")
         
         # 统计
         if summary['status'] == '正常':
@@ -269,7 +306,7 @@ def monitor_owned_funds(days: int = 1):
             elif summary['trend'] == '📉':
                 down_count += 1
     
-    print("-" * 80)
+    print("-" * 100)
     print(f"📈 上涨: {up_count} 只  📉 下跌: {down_count} 只  ➡️ 平盘: {success_count - up_count - down_count} 只  ❌ 失败: {total_funds - success_count} 只")
     
     if success_count > 0:
