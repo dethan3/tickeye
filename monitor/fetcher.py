@@ -309,29 +309,3 @@ def get_index_fund_data() -> Optional[pd.DataFrame]:
 def get_specific_funds(codes: List[str], fund_type: str = 'open') -> Optional[pd.DataFrame]:
     """获取指定基金代码的数据（兼容性函数）"""
     return fetcher.get_specific_funds(codes, fund_type)
-
-
-if __name__ == "__main__":
-    # 简化的测试代码
-    print("=== TickEye 基金数据获取器（简化版）===")
-    print(f"Python 版本: {sys.version}")
-    
-    # 测试获取少量基金
-    print("\n📊 测试获取指定基金...")
-    test_codes = ["000001", "110022", "161725"]
-    df = get_specific_funds(test_codes)
-    
-    if df is not None and not df.empty:
-        print(f"成功获取 {len(df)} 只基金")
-        print("可用列:", list(df.columns))
-        # 显示前几行数据
-        print("\n数据示例:")
-        print(df.head(3))
-    else:
-        print("未获取到数据")
-    
-    # 显示缓存信息
-    print("\n💾 缓存信息:")
-    cache_info = fetcher.get_cache_info()
-    for key, info in cache_info.items():
-        print(f"  {key}: 缓存={info['cached']}, 有效={info['valid']}, 记录数={info['record_count']}")
