@@ -1,0 +1,74 @@
+name: Daily Fund Monitor
+
+on:
+  schedule:
+    # 每天北京时间 20:30 运行 (UTC 12:30)
+    - cron: '30 12 * * *'
+  
+  # 允许手动触发
+  workflow_dispatch:
+    inputs:
+      days:
+        description: '分析天数'
+        required: false
+        default: '1'
+        type: string
+      send_table:
+        description: '是否发送表格格式'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  fund-monitor:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Set timezone to Asia/Shanghai
+      run: |
+        sudo timedatectl set-timezone Asia/Shanghai
+        echo "Current time: $(date)"
+    
+    - name: Run fund monitor
+      env:
+        FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+      run: |
+        # 设置默认参数
+        DAYS="${{ github.event.inputs.days || '1' }}"
+        SEND_TABLE="${{ github.event.inputs.send_table || 'false' }}"
+        
+        echo " 开始运行 TickEye 基金监测..."
+        echo "分析天数: $DAYS"
+        echo "发送表格: $SEND_TABLE"
+        echo "当前时间: $(date '+%Y-%m-%d %H:%M:%S %Z')"
+        
+        # 运行主程序
+        if [ "$SEND_TABLE" = "true" ]; then
+          python main.py $DAYS table
+        else
+          python main.py $DAYS
+        fi
+    
+    - name: Upload logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: error-logs
+        path: |
+          *.log
+          **/*.log
+        retention-days: 7

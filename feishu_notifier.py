@@ -2,16 +2,14 @@
 # -*- coding: utf-8 -*-
 """
 飞书机器人通知模块
-支持多种消息类型：文本、富文本、图片、交互卡片
+支持文本、富文本和市场概览通知
 """
 
 import json
 import requests
 import logging
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 from datetime import datetime
-import base64
-import os
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -95,17 +93,9 @@ class FeishuNotifier:
         Args:
             title: 消息标题
             content: 富文本内容，格式为嵌套列表
-                    外层列表表示段落，内层列表表示段落内的元素
                     
         Returns:
             bool: 发送是否成功
-            
-        Example:
-            content = [
-                [{"tag": "text", "text": "项目: "}],
-                [{"tag": "text", "text": "状态: ", "style": ["bold"]}, 
-                 {"tag": "text", "text": "正常", "style": ["bold"]}]
-            ]
         """
         payload = {
             "msg_type": "post",
@@ -120,76 +110,6 @@ class FeishuNotifier:
         }
         return self._send_request(payload)
     
-    def send_image(self, image_key: str) -> bool:
-        """
-        发送图片消息
-        
-        Args:
-            image_key: 图片的key，需要先上传图片获取
-            
-        Returns:
-            bool: 发送是否成功
-        """
-        payload = {
-            "msg_type": "image",
-            "content": {
-                "image_key": image_key
-            }
-        }
-        return self._send_request(payload)
-    
-    def send_interactive_card(self, card_content: Dict) -> bool:
-        """
-        发送交互式卡片消息
-        
-        Args:
-            card_content: 卡片内容，遵循飞书卡片格式
-            
-        Returns:
-            bool: 发送是否成功
-        """
-        payload = {
-            "msg_type": "interactive",
-            "card": card_content
-        }
-        return self._send_request(payload)
-    
-    def send_fund_alert(self, fund_code: str, fund_name: str, 
-                       current_price: float, change_percent: float,
-                       alert_type: str, alert_message: str) -> bool:
-        """
-        发送基金告警消息（富文本格式）
-        
-        Args:
-            fund_code: 基金代码
-            fund_name: 基金名称
-            current_price: 当前价格
-            change_percent: 涨跌幅
-            alert_type: 告警类型
-            alert_message: 告警信息
-            
-        Returns:
-            bool: 发送是否成功
-        """
-        # 根据涨跌幅确定颜色
-        color = "green" if change_percent > 0 else "red" if change_percent < 0 else "grey"
-        change_symbol = "📈" if change_percent > 0 else "📉" if change_percent < 0 else "➡️"
-        
-        title = f"🚨 基金告警 - {alert_type}"
-        
-        content = [
-            [{"tag": "text", "text": f"基金代码: {fund_code}"}],
-            [{"tag": "text", "text": f"基金名称: {fund_name}"}],
-            [{"tag": "text", "text": f"当前净值: ¥{current_price:.4f}"}],
-            [{"tag": "text", "text": f"涨跌幅: {change_symbol} {change_percent:+.2f}%", 
-              "style": ["bold"]}],
-            [{"tag": "text", "text": f"告警信息: {alert_message}", 
-              "style": ["bold"]}],
-            [{"tag": "text", "text": f"时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"}]
-        ]
-        
-        return self.send_rich_text(title, content)
-    
     def send_market_summary(self, summary_data: Dict) -> bool:
         """
         发送市场概览消息（交互式卡片格式）
@@ -200,14 +120,25 @@ class FeishuNotifier:
         Returns:
             bool: 发送是否成功
         """
+        if not summary_data:
+            logger.warning("市场概览数据为空")
+            return False
+        
+        # 计算统计数据
+        total_funds = len(summary_data)
+        up_funds = sum(1 for data in summary_data.values() if data.get('change', 0) > 0)
+        down_funds = sum(1 for data in summary_data.values() if data.get('change', 0) < 0)
+        flat_funds = total_funds - up_funds - down_funds
+        
+        # 构建卡片内容
         card_content = {
             "config": {
                 "wide_screen_mode": True
             },
             "header": {
                 "title": {
-                    "tag": "plain_text",
-                    "content": "📊 每日市场概览"
+                    "content": "📊 TickEye 基金市场概览",
+                    "tag": "plain_text"
                 },
                 "template": "blue"
             },
@@ -215,8 +146,8 @@ class FeishuNotifier:
                 {
                     "tag": "div",
                     "text": {
-                        "tag": "lark_md",
-                        "content": f"**更新时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                        "content": f"**监控时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n**基金总数**: {total_funds} 只\n**上涨**: {up_funds} 只 | **下跌**: {down_funds} 只 | **平盘**: {flat_funds} 只",
+                        "tag": "lark_md"
                     }
                 },
                 {
@@ -225,43 +156,53 @@ class FeishuNotifier:
             ]
         }
         
-        # 添加基金数据
+        # 添加基金详情
         for fund_code, data in summary_data.items():
+            fund_name = data.get('name', 'N/A')
+            price = data.get('price', 0)
             change = data.get('change', 0)
             
-            # 根据涨跌情况选择标识和颜色
+            # 确定趋势图标和颜色
             if change > 0:
-                change_indicator = "📈"
-                change_text = f"<font color='red'>**涨跌**: {change_indicator} +{change:.2f}%</font>"
+                trend_icon = "📈"
+                change_color = "green"
             elif change < 0:
-                change_indicator = "📉"
-                change_text = f"<font color='green'>**涨跌**: {change_indicator} {change:.2f}%</font>"
+                trend_icon = "📉"
+                change_color = "red"
             else:
-                change_indicator = "➖"
-                change_text = f"**涨跌**: {change_indicator} {change:.2f}%"
+                trend_icon = "➖"
+                change_color = "grey"
             
-            element = {
+            # 添加基金信息元素
+            fund_element = {
                 "tag": "div",
-                "fields": [
-                    {
-                        "is_short": True,
-                        "text": {
-                            "tag": "lark_md",
-                            "content": f"**{fund_code}**\n{data.get('name', 'N/A')}"
-                        }
-                    },
-                    {
-                        "is_short": True,
-                        "text": {
-                            "tag": "lark_md",
-                            "content": f"**净值**: ¥{data.get('price', 0):.4f}\n{change_text}"
-                        }
-                    }
-                ]
+                "text": {
+                    "content": f"**{fund_code}** {fund_name}\n净值: ¥{price:.4f} | 涨跌: <font color='{change_color}'>{trend_icon} {change:+.2f}%</font>",
+                    "tag": "lark_md"
+                }
             }
-            card_content["elements"].append(element)
+            card_content["elements"].append(fund_element)
         
-        return self.send_interactive_card(card_content)
+        # 添加底部信息
+        card_content["elements"].extend([
+            {
+                "tag": "hr"
+            },
+            {
+                "tag": "div",
+                "text": {
+                    "content": "数据来源: TickEye 监控系统",
+                    "tag": "plain_text"
+                }
+            }
+        ])
+        
+        payload = {
+            "msg_type": "interactive",
+            "card": card_content
+        }
+        
+        return self._send_request(payload)
     
     def send_market_summary_table(self, summary_data: Dict) -> bool:
         """
@@ -273,23 +214,20 @@ class FeishuNotifier:
         Returns:
             bool: 发送是否成功
         """
-        # 构建富文本内容，使用文本格式模拟表格
+        if not summary_data:
+            logger.warning("市场概览数据为空")
+            return False
+        
+        # 构建富文本表格内容
         content = []
         
-        # 标题行
+        # 标题
         content.append([
-            {"tag": "text", "text": "📊 市场概览", "style": ["bold"]}
+            {"tag": "text", "text": f"📊 基金市场概览 ({datetime.now().strftime('%Y-%m-%d %H:%M')})", "style": ["bold"]}
         ])
         
-        # 更新时间
-        content.append([
-            {"tag": "text", "text": f"更新时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"}
-        ])
-        
-        # 分割线
-        content.append([
-            {"tag": "text", "text": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"}
-        ])
+        # 空行
+        content.append([{"tag": "text", "text": ""}])
         
         # 表头
         content.append([
@@ -362,46 +300,10 @@ def create_notifier_from_env() -> Optional[FeishuNotifier]:
     Returns:
         FeishuNotifier: 通知器实例，如果环境变量未设置则返回None
     """
+    import os
     webhook_url = os.getenv('FEISHU_WEBHOOK_URL')
     if not webhook_url:
         logger.warning("未设置FEISHU_WEBHOOK_URL环境变量")
         return None
     
     return FeishuNotifier(webhook_url)
-
-
-# 示例用法
-if __name__ == "__main__":
-    # 从环境变量获取webhook URL
-    webhook_url = os.getenv('FEISHU_WEBHOOK_URL')
-    if not webhook_url:
-        print("请设置FEISHU_WEBHOOK_URL环境变量")
-        exit(1)
-    
-    # 创建通知器
-    notifier = FeishuNotifier(webhook_url)
-    
-    # 测试文本消息
-    print("测试文本消息...")
-    notifier.send_text("TickEye 系统启动成功！")
-    
-    # 测试富文本消息
-    print("测试富文本消息...")
-    content = [
-        [{"tag": "text", "text": "系统状态报告"}],
-        [{"tag": "text", "text": "状态: ", "style": ["bold"]}, 
-         {"tag": "text", "text": "正常运行", "style": ["bold"]}],
-        [{"tag": "text", "text": "监控基金数量: 5"}]
-    ]
-    notifier.send_rich_text("📊 TickEye 状态", content)
-    
-    # 测试基金告警
-    print("测试基金告警...")
-    notifier.send_fund_alert(
-        fund_code="270042",
-        fund_name="广发纳指100ETF联接（QDII）人民币A",
-        current_price=1.2345,
-        change_percent=2.56,
-        alert_type="价格上涨",
-        alert_message="基金净值上涨超过2%"
-    )
