@@ -17,6 +17,7 @@ apscheduler>=3.10.0      # 高级任务调度 (可选)
 
 # 配置文件处理 (未来扩展用)
 PyYAML>=6.0              # YAML配置文件解析
+python-dotenv>=1.0.0     # .env 文件环境变量加载
 
 # 日期和时间处理
 python-dateutil>=2.8.0   # 日期处理工具

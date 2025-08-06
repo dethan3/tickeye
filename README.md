@@ -75,6 +75,8 @@ Create or edit `funds_config.txt` with your fund codes:
 ### 3. Run Fund Analysis
 
 ```bash
+`source tickeye_env/bin/activate`
+
 # Monitor funds for 1 day (default)
 python fund_analysis.py
 

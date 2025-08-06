@@ -1,0 +1,14 @@
+{
+  "webhook_url": "",
+  "enabled": true,
+  "timeout": 10,
+  "retry_times": 3,
+  "message_settings": {
+    "include_timestamp": true,
+    "use_emoji": true,
+    "alert_threshold": {
+      "price_change_percent": 5.0,
+      "volume_change_percent": 50.0
+    }
+  }
+}
