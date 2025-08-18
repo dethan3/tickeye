@@ -2,8 +2,8 @@ name: Daily Fund Monitor
 
 on:
   schedule:
-    # 每天北京时间 13:00 运行 (UTC 5:00)
-    - cron: '0 5 * * *'
+    # 每天北京时间 09:00 运行 (UTC 5:00)
+    - cron: '0 1 * * *'
   
   # 允许手动触发
   workflow_dispatch:
