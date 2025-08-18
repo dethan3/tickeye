@@ -1,0 +1,17 @@
+{
+  "aliases": {
+    "000001": {"symbol": "sh000001", "market": "cn", "name": "上证指数"},
+    "HSI":    {"symbol": "HSI",      "market": "global_asia", "name": "恒生指数"},
+
+    "NDX":    {"symbol": "NDX",      "market": "global_america",   "name": "纳斯达克"},
+    "SPX":    {"symbol": "SPX",      "market": "global_america",   "name": "标普500"},
+
+    "VNINDEX": {"symbol": "VNINDEX",  "market": "global_asia",      "name": "越南胡志明"},
+    "SENSEX": {"symbol": "SENSEX",   "market": "global_asia",      "name": "印度孟买SENSEX"},
+    "N225":   {"symbol": "N225",     "market": "global_asia",      "name": "日经225"},
+    "HSCEI":  {"symbol": "HSCEI",    "market": "global_asia",      "name": "国企指数"},
+
+    "AS51":   {"symbol": "AS51",     "market": "global_australia", "name": "澳洲标普ASX 200"},
+    "TSX":    {"symbol": "TSX",      "market": "global_america",   "name": "加拿大多伦多TSX"}
+  }
+}

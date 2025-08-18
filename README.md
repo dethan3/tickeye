@@ -6,11 +6,12 @@
 
 ## 📌 Features
 
-- **Fund Data Fetching**: Real-time fund data using AkShare API
-- **Flexible Configuration**: Support both `fund_code|fund_name` and `fund_code` only formats
+- **Fund & Index Tracking**: Monitor your funds and major indices (global and China)
+- **Real-time Indices**: Global indices via `index_global_spot_em`; China indices via `stock_zh_index_spot_em` (default to same-day spot, fallback to daily history)
+- **Flexible Configuration**: Configure items in `funds_config.json` (supports funds and indices)
 - **Smart Name Resolution**: Automatically fetch fund names via API when not provided
 - **Performance Analysis**: Daily net value and percentage change tracking
-- **Multi-fund Support**: Monitor multiple funds simultaneously
+- **Multi-item Support**: Monitor multiple funds/indices simultaneously
 - **Clean Output**: Beautiful console output with trend indicators (📈📉➡️)
 
 ---
@@ -23,7 +24,7 @@
 | Data Source       | AkShare API                   |
 | Data Processing   | pandas                        |
 | HTTP Client       | requests                      |
-| Config Parsing    | Text file parsing             |
+| Config Parsing    | JSON file parsing             |
 
 ---
 
@@ -54,46 +55,50 @@ source tickeye_env/bin/activate  # On Windows: tickeye_env\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 4. Configure Your Funds
+### 4. Configure Your Items
 
-Create or edit `funds_config.txt` with your fund codes:
+Use `funds_config.json` to configure funds and indices:
 
-```txt
-# Format 1: fund_code|fund_name (name will be auto-updated from API)
-270042|广发纳指联接A
-007360|易方达中短期美元债A
+```json
+{
+  "items": [
+    {"code": "007360", "name": "易方达中短期美元债A"},
+    {"code": "001917", "name": "招商量化精选股票A"},
 
-# Format 2: fund_code only (name auto-fetched from API)
-001917
-006195
-
-# Comments and empty lines are supported
-# 159915  # This is a comment
+    {"code": "000001", "name": ""},           
+    {"code": "HSI", "name": "恒生指数"},      
+    {"code": "NDX", "name": "纳斯达克"},      
+    {"code": "SPX", "name": "标普500"}
+  ]
+}
 ```
 
-### 5. Run Fund Analysis
+Notes:
+- For funds, use the 6-digit code (e.g., `001917`).
+- For China indices, you can use alias `000001` (mapped to `sh000001` internally) or direct symbol `sh000001`/`sz399001`.
+- For global indices, use tickers like `HSI`, `NDX`, `SPX`, `VNINDEX`, etc.
+- `name` is optional; when empty, the tool will resolve via API/config.
+- Optional: you can add/adjust index aliases in `indices_config.json`.
+
+### 5. Run Fund/Index Analysis
 
 ```bash
-# Monitor funds for 1 day (default)
+# Monitor for 1 day (default); indices default to same-day spot
 python fund_analysis.py
 
-# Monitor funds for multiple days
+# Request multiple days of history (funds use history; indices still prefer spot by default)
 python fund_analysis.py 7
-
-# Monitor funds for 30 days
-python fund_analysis.py 30
 ```
 
 ### 6. Understanding the Output
 
 The tool provides a comprehensive report with:
 
-- **Fund Code & Name**: Automatically fetched latest fund names
-- **Latest Date**: Most recent trading date
-- **Net Value**: Current unit net value
-- **Change %**: Daily percentage change
+- **Code & Name**: Funds and indices; names auto-resolved
+- **Latest Date**: Most recent trading date or current timestamp for spot indices
+- **Net Value / Spot**: Unit NAV (fund) or index level
+- **Change %**: Daily percentage change (spot for indices; close-to-close for history)
 - **Trend**: Visual indicators (📈 up, 📉 down, ➡️ flat)
-- **Status**: Fund status (normal/error)
 - **Summary**: Overall statistics and success rate
 
 ### 7. Configuration Tips
