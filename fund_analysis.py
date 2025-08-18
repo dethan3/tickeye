@@ -12,9 +12,86 @@ import pandas as pd
 import akshare as ak
 import logging
 import json
+import time
+from typing import Dict, List, Tuple, Optional, Union
+from functools import wraps
 
 # 添加项目路径
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# ==================== 常量定义 ====================
+class DataColumns:
+    """数据列名常量"""
+    DATE = '净值日期'
+    NET_VALUE = '单位净值'
+    DAILY_CHANGE = '日增长率'
+    CODE = '代码'
+    NAME = '名称'
+    FUND_NAME = '基金全称'
+    LATEST_PRICE = '最新价'
+    CHANGE_PCT = '涨跌幅'
+    UPDATE_TIME = '最新行情时间'
+    CLOSE = 'close'
+    DATE_FIELD = 'date'
+
+class RetryConfig:
+    """重试配置常量"""
+    MAX_RETRIES = 3
+    RETRY_DELAY = 1.0
+    BACKOFF_FACTOR = 2.0
+
+# ==================== 工具函数 ====================
+def retry_api_call(max_retries: int = RetryConfig.MAX_RETRIES, 
+                   delay: float = RetryConfig.RETRY_DELAY,
+                   backoff_factor: float = RetryConfig.BACKOFF_FACTOR):
+    """API调用重试装饰器"""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            last_exception = None
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    last_exception = e
+                    if attempt < max_retries - 1:
+                        wait_time = delay * (backoff_factor ** attempt)
+                        logging.warning(f"API调用失败，{wait_time:.1f}秒后重试 (尝试 {attempt + 1}/{max_retries}): {str(e)}")
+                        time.sleep(wait_time)
+                    else:
+                        logging.error(f"API调用最终失败 (尝试 {max_retries} 次): {str(e)}")
+            raise last_exception
+        return wrapper
+    return decorator
+
+def validate_dataframe(df: pd.DataFrame, required_columns: List[str]) -> bool:
+    """验证DataFrame是否包含必需的列"""
+    if df is None or df.empty:
+        return False
+    return all(col in df.columns for col in required_columns)
+
+def safe_get_column_value(df: pd.DataFrame, row_idx: int, column: str, default=None):
+    """安全获取DataFrame列值"""
+    try:
+        if column in df.columns and row_idx < len(df):
+            value = df.iloc[row_idx][column]
+            return value if pd.notna(value) else default
+        return default
+    except (IndexError, KeyError):
+        return default
+
+# ==================== 全局变量延迟初始化 ====================
+_config_cache = {}
+
+def get_owned_funds() -> Tuple[List[str], Dict[str, str]]:
+    """延迟加载基金配置，避免模块导入时失败"""
+    if 'funds_config' not in _config_cache:
+        try:
+            _config_cache['funds_config'] = load_funds_config()
+        except Exception as e:
+            logging.error(f"加载基金配置失败: {str(e)}")
+            _config_cache['funds_config'] = ([], {})
+    return _config_cache['funds_config']
 
 # ==================== 指数配置加载与代码解析 ====================
 def load_index_aliases(config_file: str = 'indices_config.json') -> dict:
@@ -35,7 +112,11 @@ def load_index_aliases(config_file: str = 'indices_config.json') -> dict:
     except Exception:
         return {"aliases": {}}
 
-INDEX_CONFIG = load_index_aliases()
+def get_index_config() -> dict:
+    """延迟加载指数配置"""
+    if 'index_config' not in _config_cache:
+        _config_cache['index_config'] = load_index_aliases()
+    return _config_cache['index_config']
 
 def resolve_code(code: str) -> dict:
     """
@@ -50,7 +131,7 @@ def resolve_code(code: str) -> dict:
         return {}
 
     # 1) 命中配置别名（先精确，其次大写）
-    aliases = INDEX_CONFIG.get('aliases', {})
+    aliases = get_index_config().get('aliases', {})
     if c in aliases:
         v = aliases[c]
         return {"type": "index", "market": v.get('market'), "symbol": v.get('symbol', c), "alias_name": v.get('name')}
@@ -211,8 +292,7 @@ def is_index_code(code: str) -> bool:
     info = resolve_code(code)
     return bool(info) and info.get('type') == 'index'
 
-# 加载基金配置
-OWNED_FUNDS, FUND_NAMES = load_funds_config()
+# 注意：OWNED_FUNDS 和 FUND_NAMES 已改为延迟加载，通过 get_owned_funds() 获取
 
 def get_fund_name(fund_code: str) -> str:
     """
@@ -264,14 +344,16 @@ def get_fund_name(fund_code: str) -> str:
             pass
     
     # 如果 API 获取失败，尝试使用配置文件中的名称
-    if fund_code in FUND_NAMES:
-        config_name = FUND_NAMES[fund_code]
+    _, fund_names = get_owned_funds()
+    if fund_code in fund_names:
+        config_name = fund_names[fund_code]
         if config_name and config_name.strip():
             return config_name.strip()
     
     # 如果都失败，返回基金代码本身
     return fund_code
 
+@retry_api_call()
 def get_global_index_data(fund_code: str) -> dict:
     """
     从全球指数API获取指数数据
@@ -287,8 +369,15 @@ def get_global_index_data(fund_code: str) -> dict:
         if global_data.empty:
             return {}
         
+        # 验证必需的列是否存在
+        required_cols = [DataColumns.CODE, DataColumns.NAME, DataColumns.LATEST_PRICE, 
+                        DataColumns.CHANGE_PCT, DataColumns.UPDATE_TIME]
+        if not validate_dataframe(global_data, required_cols):
+            logging.error(f"全球指数数据格式不正确，缺少必需列: {required_cols}")
+            return {}
+        
         # 查找匹配的指数
-        matches = global_data[global_data['代码'].str.upper() == fund_code.upper()]
+        matches = global_data[global_data[DataColumns.CODE].str.upper() == fund_code.upper()]
         
         if matches.empty:
             return {}
@@ -297,13 +386,19 @@ def get_global_index_data(fund_code: str) -> dict:
         index_row = matches.iloc[0]
         
         return {
-            'code': index_row['代码'],
-            'name': index_row['名称'],
-            'latest_price': index_row['最新价'],
-            'change_pct': index_row['涨跌幅'],
-            'update_time': index_row['最新行情时间']
+            'code': safe_get_column_value(matches, 0, DataColumns.CODE),
+            'name': safe_get_column_value(matches, 0, DataColumns.NAME),
+            'latest_price': safe_get_column_value(matches, 0, DataColumns.LATEST_PRICE),
+            'change_pct': safe_get_column_value(matches, 0, DataColumns.CHANGE_PCT),
+            'update_time': safe_get_column_value(matches, 0, DataColumns.UPDATE_TIME)
         }
         
+    except (ConnectionError, TimeoutError) as e:
+        logging.error(f"网络连接失败，获取全球指数 {fund_code} 数据: {str(e)}")
+        return {}
+    except KeyError as e:
+        logging.error(f"数据格式错误，获取全球指数 {fund_code} 数据: {str(e)}")
+        return {}
     except Exception as e:
         logging.error(f"获取全球指数 {fund_code} 数据失败: {str(e)}")
         return {}
@@ -314,9 +409,9 @@ def _format_index_output(df: pd.DataFrame, days: int) -> pd.DataFrame:
     if df is None or df.empty:
         return pd.DataFrame()
     out = df.copy()
-    if '净值日期' in out.columns:
-        out['净值日期'] = pd.to_datetime(out['净值日期'])
-        out = out.sort_values('净值日期', ascending=False)
+    if DataColumns.DATE in out.columns:
+        out[DataColumns.DATE] = pd.to_datetime(out[DataColumns.DATE])
+        out = out.sort_values(DataColumns.DATE, ascending=False)
     return out.head(days)
 
 def _build_global_index_df(spot: dict) -> pd.DataFrame:
@@ -326,9 +421,9 @@ def _build_global_index_df(spot: dict) -> pd.DataFrame:
     import datetime
     current_time = datetime.datetime.now()
     data = {
-        '净值日期': [current_time],
-        '单位净值': [spot['latest_price']],
-        '日增长率': [f"{spot['change_pct']}%"],
+        DataColumns.DATE: [current_time],
+        DataColumns.NET_VALUE: [spot['latest_price']],
+        DataColumns.DAILY_CHANGE: [f"{spot['change_pct']}%"],
     }
     return pd.DataFrame(data)
 
@@ -336,15 +431,24 @@ def _build_cn_index_df(index_data: pd.DataFrame) -> pd.DataFrame:
     """由 A 股指数历史数据构建标准输出DataFrame，并计算日增长率。"""
     if index_data is None or index_data.empty:
         return pd.DataFrame()
+    
+    # 验证必需的列是否存在
+    required_cols = [DataColumns.DATE_FIELD, DataColumns.CLOSE]
+    if not validate_dataframe(index_data, required_cols):
+        logging.error(f"A股指数数据格式不正确，缺少必需列: {required_cols}")
+        return pd.DataFrame()
+    
     df = index_data.copy()
-    df['净值日期'] = pd.to_datetime(df['date'])
-    df['单位净值'] = df['close']
+    df[DataColumns.DATE] = pd.to_datetime(df[DataColumns.DATE_FIELD])
+    df[DataColumns.NET_VALUE] = df[DataColumns.CLOSE]
+    
     if len(df) > 1:
-        df = df.sort_values('净值日期', ascending=False)
-        prev_close = df['close'].shift(-1)
-        df['日增长率'] = ((df['close'] - prev_close) / prev_close * 100).round(2)
-        df['日增长率'] = df['日增长率'].astype(str) + '%'
-    df = df.sort_values('净值日期', ascending=False)
+        df = df.sort_values(DataColumns.DATE, ascending=False)
+        prev_close = df[DataColumns.CLOSE].shift(-1)
+        df[DataColumns.DAILY_CHANGE] = ((df[DataColumns.CLOSE] - prev_close) / prev_close * 100).round(2)
+        df[DataColumns.DAILY_CHANGE] = df[DataColumns.DAILY_CHANGE].astype(str) + '%'
+    
+    df = df.sort_values(DataColumns.DATE, ascending=False)
     return df
 
 def _build_cn_index_spot_df(symbol: str) -> pd.DataFrame:
@@ -358,20 +462,28 @@ def _build_cn_index_spot_df(symbol: str) -> pd.DataFrame:
         core = symbol[-6:].upper() if symbol else ''
         if not core or not core.isdigit():
             return pd.DataFrame()
-        codes = spot['代码'].astype(str).str.upper()
+        
+        # 验证必需的列是否存在
+        required_cols = [DataColumns.CODE, DataColumns.LATEST_PRICE, DataColumns.CHANGE_PCT]
+        if not validate_dataframe(spot, required_cols):
+            logging.error(f"A股指数实时数据格式不正确，缺少必需列: {required_cols}")
+            return pd.DataFrame()
+        
+        codes = spot[DataColumns.CODE].astype(str).str.upper()
         # 兼容 000001 / 000001.SH / 399001.SZ
         mask = (codes == core) | (codes == f"{core}.SH") | (codes == f"{core}.SZ")
         matches = spot[mask]
         if matches.empty:
             return pd.DataFrame()
-        row = matches.iloc[0]
-        latest = row['最新价'] if '最新价' in row else None
-        pct = row['涨跌幅'] if '涨跌幅' in row else None
+        
+        latest = safe_get_column_value(matches, 0, DataColumns.LATEST_PRICE)
+        pct = safe_get_column_value(matches, 0, DataColumns.CHANGE_PCT)
         ts = pd.Timestamp.now()
+        
         data = {
-            '净值日期': [ts],
-            '单位净值': [latest],
-            '日增长率': [f"{pct}%" if pct is not None and str(pct) != '' else 'N/A'],
+            DataColumns.DATE: [ts],
+            DataColumns.NET_VALUE: [latest],
+            DataColumns.DAILY_CHANGE: [f"{pct}%" if pct is not None and str(pct) != '' else 'N/A'],
         }
         return pd.DataFrame(data)
     except Exception as e:
@@ -413,7 +525,14 @@ def get_specific_fund_data(fund_code: str, days: int = 1) -> pd.DataFrame:
         fund_data = ak.fund_open_fund_info_em(symbol=info.get('symbol', fund_code), indicator="单位净值走势")
         if fund_data.empty:
             return pd.DataFrame()
-        fund_data = fund_data.sort_values('净值日期', ascending=False)
+        
+        # 验证必需的列是否存在
+        required_cols = [DataColumns.DATE, DataColumns.NET_VALUE]
+        if not validate_dataframe(fund_data, required_cols):
+            logging.error(f"基金数据格式不正确，缺少必需列: {required_cols}")
+            return pd.DataFrame()
+        
+        fund_data = fund_data.sort_values(DataColumns.DATE, ascending=False)
         return fund_data.head(days)
 
     except Exception as e:
@@ -440,16 +559,19 @@ def get_fund_summary(fund_code: str, days: int = 1) -> dict:
         
         # 获取最新数据
         latest_row = fund_data.iloc[0]
-        latest_date = latest_row['净值日期'].strftime('%Y-%m-%d')
-        net_value = latest_row['单位净值']
+        latest_date = safe_get_column_value(fund_data, 0, DataColumns.DATE)
+        if latest_date and hasattr(latest_date, 'strftime'):
+            latest_date = latest_date.strftime('%Y-%m-%d')
+        else:
+            latest_date = 'N/A'
+        net_value = safe_get_column_value(fund_data, 0, DataColumns.NET_VALUE)
         
         # 计算涨跌幅
         if len(fund_data) >= 2:
             # 有前一天的数据，计算涨跌幅
-            prev_row = fund_data.iloc[1]
-            prev_value = prev_row['单位净值']
+            prev_value = safe_get_column_value(fund_data, 1, DataColumns.NET_VALUE)
             
-            if prev_value and prev_value != 0:
+            if prev_value and prev_value != 0 and net_value is not None:
                 change_pct = ((net_value - prev_value) / prev_value) * 100
                 change_str = f"{change_pct:.2f}%"
                 trend = "📈" if change_pct > 0 else "📉" if change_pct < 0 else "➡️"
@@ -459,15 +581,16 @@ def get_fund_summary(fund_code: str, days: int = 1) -> dict:
                 trend = "➡️"
         else:
             # 只有一天的数据，尝试从日增长率列获取
-            if '日增长率' in latest_row and pd.notna(latest_row['日增长率']):
-                change_str = str(latest_row['日增长率']).strip()
+            daily_change = safe_get_column_value(fund_data, 0, DataColumns.DAILY_CHANGE)
+            if daily_change and pd.notna(daily_change):
+                change_str = str(daily_change).strip()
                 if change_str and change_str != '--' and change_str != 'N/A':
                     try:
                         # 去掉百分号并转换为数字
                         change_num = float(change_str.replace('%', ''))
                         change_str = f"{change_num:.2f}%"
                         trend = "📈" if change_num > 0 else "📉" if change_num < 0 else "➡️"
-                    except:
+                    except ValueError:
                         change_str = "N/A"
                         trend = "❓"
                 else:
@@ -508,13 +631,16 @@ def monitor_owned_funds(days: int = 1):
     print("TickEye 基金监测工具")
     print("=" * 80)
     
-    if not OWNED_FUNDS:
+    # 使用延迟加载的配置
+    owned_funds, _ = get_owned_funds()
+    
+    if not owned_funds:
         print("未配置任何基金代码或指数代码！")
         return
     
     # 统计基金和指数数量
-    fund_count = sum(1 for code in OWNED_FUNDS if not is_index_code(code))
-    index_count = sum(1 for code in OWNED_FUNDS if is_index_code(code))
+    fund_count = sum(1 for code in owned_funds if not is_index_code(code))
+    index_count = sum(1 for code in owned_funds if is_index_code(code))
     
     if fund_count > 0 and index_count > 0:
         print(f"正在监测 {fund_count} 只基金和 {index_count} 个指数 (最近 {days} 天)")
@@ -525,7 +651,7 @@ def monitor_owned_funds(days: int = 1):
     
     # 获取所有基金的数据
     fund_summaries = []
-    for fund_code in OWNED_FUNDS:
+    for fund_code in owned_funds:
         summary = get_fund_summary(fund_code, days)
         fund_summaries.append(summary)
     
