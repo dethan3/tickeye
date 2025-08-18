@@ -11,9 +11,68 @@ import os
 import pandas as pd
 import akshare as ak
 import logging
+import json
 
 # 添加项目路径
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# ==================== 指数配置加载与代码解析 ====================
+def load_index_aliases(config_file: str = 'indices_config.json') -> dict:
+    """
+    加载指数别名配置
+    返回字典格式：{"aliases": { alias: {"symbol": str, "market": "cn"|"global", "name": str } }}
+    """
+    try:
+        if not os.path.isabs(config_file):
+            config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), config_file)
+        if not os.path.exists(config_file):
+            return {"aliases": {}}
+        with open(config_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            if isinstance(data, dict) and 'aliases' in data and isinstance(data['aliases'], dict):
+                return data
+            return {"aliases": {}}
+    except Exception:
+        return {"aliases": {}}
+
+INDEX_CONFIG = load_index_aliases()
+
+def resolve_code(code: str) -> dict:
+    """
+    解析输入代码，统一判断类型与市场，并提供实际数据源symbol
+    返回：{ 'type': 'fund'|'index', 'market': 'cn'|'global'|None, 'symbol': str|None, 'alias_name': str|None }
+    若无法识别，返回空字典 {}
+    """
+    if not code:
+        return {}
+    c = code.strip()
+    if not c:
+        return {}
+
+    # 1) 命中配置别名（先精确，其次大写）
+    aliases = INDEX_CONFIG.get('aliases', {})
+    if c in aliases:
+        v = aliases[c]
+        return {"type": "index", "market": v.get('market'), "symbol": v.get('symbol', c), "alias_name": v.get('name')}
+    cu = c.upper()
+    if cu in aliases:
+        v = aliases[cu]
+        return {"type": "index", "market": v.get('market'), "symbol": v.get('symbol', cu), "alias_name": v.get('name')}
+
+    # 2) 纯数字：视为基金
+    if c.isdigit():
+        return {"type": "fund", "market": None, "symbol": c, "alias_name": None}
+
+    # 3) 中国指数直接symbol格式：sh000xxx 或 sz000xxx
+    if (len(c) == 8 and (c.startswith('sh') or c.startswith('sz')) and c[2:].isdigit()):
+        return {"type": "index", "market": "cn", "symbol": c, "alias_name": None}
+
+    # 4) 全大写英文字母/数字短码，尝试视为全球指数（例如 HSI、SPX）
+    if cu == c and 2 <= len(cu) <= 10 and cu.replace('_', '').isalnum():
+        # 未在别名中定义区域时，默认标记为 'global'，下游以 startswith('global') 处理
+        return {"type": "index", "market": "global", "symbol": cu, "alias_name": None}
+
+    return {}
 
 # ==================== 基金配置加载函数 ====================
 def load_funds_config(config_file='funds_config.txt'):
@@ -30,54 +89,98 @@ def load_funds_config(config_file='funds_config.txt'):
     if not os.path.isabs(config_file):
         config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), config_file)
     
+    # 优先尝试 JSON 配置（同名 .json）
+    json_file = os.path.splitext(config_file)[0] + '.json'
     owned_funds = []
     fund_names = {}
-    
+
+    # 先读取 JSON
+    if os.path.exists(json_file):
+        try:
+            with open(json_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            # 支持两种结构：{"items": [...]} 或 顶层数组 [...]
+            items = []
+            if isinstance(data, dict) and 'items' in data and isinstance(data['items'], list):
+                items = data['items']
+            elif isinstance(data, list):
+                items = data
+            else:
+                print(f"JSON 配置格式不正确：应为包含 items 的对象或数组: {json_file}")
+                return [], {}
+
+            for idx, item in enumerate(items, 1):
+                code, name = None, None
+                if isinstance(item, dict):
+                    code = str(item.get('code', '')).strip()
+                    name = str(item.get('name', '')).strip() if item.get('name') is not None else ''
+                elif isinstance(item, str):
+                    line = item.strip()
+                    if not line or line.startswith('#'):
+                        continue
+                    if '|' in line:
+                        parts = line.split('|', 1)
+                        code = parts[0].strip()
+                        name = parts[1].strip()
+                    else:
+                        code = line
+                        name = ''
+                else:
+                    print(f"JSON 配置第 {idx} 项格式不正确，必须是对象或字符串")
+                    continue
+
+                if code and is_valid_code(code):
+                    owned_funds.append(code)
+                    if name:
+                        fund_names[code] = name
+                else:
+                    print(f"JSON 配置第 {idx} 项：'{code}' 不是有效的基金代码或指数代码")
+
+            if not owned_funds:
+                print("JSON 配置中没有找到有效的基金/指数代码！")
+            return owned_funds, fund_names
+        except FileNotFoundError:
+            pass
+        except Exception as e:
+            print(f"读取 JSON 配置文件时出错：{str(e)}，回退读取 TXT 配置")
+
+    # 回退 TXT
     try:
         with open(config_file, 'r', encoding='utf-8') as f:
             for line_num, line in enumerate(f, 1):
                 line = line.strip()
-                
-                # 跳过空行和注释行
                 if not line or line.startswith('#'):
                     continue
-                
-                # 解析基金代码和名称
                 if '|' in line:
-                    # 格式：基金代码|基金名称
-                    parts = line.split('|', 1)  # 只分割一次，防止名称中有 | 符号
+                    parts = line.split('|', 1)
                     if len(parts) == 2:
                         fund_code = parts[0].strip()
                         fund_name = parts[1].strip()
-                        
                         if fund_code:
                             owned_funds.append(fund_code)
-                            if fund_name:  # 如果提供了名称，使用配置的名称
+                            if fund_name:
                                 fund_names[fund_code] = fund_name
                         else:
                             print(f"配置文件第 {line_num} 行：基金代码为空")
                     else:
                         print(f"配置文件第 {line_num} 行：格式错误")
                 else:
-                    # 只有基金代码的情况
                     fund_code = line.strip()
-                    if fund_code and is_valid_code(fund_code):  # 验证基金代码或指数代码格式
+                    if fund_code and is_valid_code(fund_code):
                         owned_funds.append(fund_code)
-                        # 不在这里设置名称，让get_fund_name函数通过API获取
                     else:
                         print(f"配置文件第 {line_num} 行：'{fund_code}' 不是有效的基金代码或指数代码")
-    
+
     except FileNotFoundError:
         print(f"配置文件 {config_file} 不存在！")
         return [], {}
-    
     except Exception as e:
         print(f"读取配置文件时出错：{str(e)}")
         return [], {}
-    
+
     if not owned_funds:
         print("配置文件中没有找到有效的基金配置！")
-    
+
     return owned_funds, fund_names
 
 def is_valid_code(code: str) -> bool:
@@ -92,22 +195,8 @@ def is_valid_code(code: str) -> bool:
     """
     if not code:
         return False
-    
-    # 基金代码：纯数字，通常6位
-    if code.isdigit():
-        return True
-    
-    # 国际指数代码：常见格式
-    international_codes = ['HSI', 'NDX', 'SPX', 'VNINDEX', 'SENSEX', 'N225', 'HSCEI', 'AS51', 'TSX']
-    if code.upper() in international_codes:
-        return True
-    
-    # 中国指数代码：可能包含字母和数字的组合
-    # 常见格式：1A0001 (上证指数), 399001 (深证成指) 等
-    if len(code) >= 4 and code.replace('A', '').replace('B', '').replace('C', '').isdigit():
-        return True
-    
-    return False
+    info = resolve_code(code)
+    return bool(info)
 
 def is_index_code(code: str) -> bool:
     """
@@ -119,21 +208,8 @@ def is_index_code(code: str) -> bool:
     Returns:
         bool: 是否为指数代码
     """
-    # 国际指数代码
-    international_codes = ['HSI', 'NDX', 'SPX', 'VNINDEX', 'SENSEX', 'N225', 'HSCEI', 'AS51', 'TSX']
-    if code.upper() in international_codes:
-        return True
-    
-    # 中国指数代码（包含字母或特定格式，但排除纯数字的中国指数如000001）
-    if not code.isdigit() and is_valid_code(code):
-        return True
-    
-    # 中国主要指数代码（纯数字）
-    china_index_codes = ['000001', '399001', '399006', '000300']
-    if code in china_index_codes:
-        return True
-    
-    return False
+    info = resolve_code(code)
+    return bool(info) and info.get('type') == 'index'
 
 # 加载基金配置
 OWNED_FUNDS, FUND_NAMES = load_funds_config()
@@ -153,48 +229,39 @@ def get_fund_name(fund_code: str) -> str:
     Returns:
         str: 基金全名或指数名称，如果获取失败则返回代码本身
     """
-    # 判断是否为指数代码
-    if is_index_code(fund_code):
-        # 处理指数代码
-        try:
-            # 中国指数
-            if fund_code == '1A0001' or fund_code == '000001':
-                return '上证指数'
-            elif fund_code == '399001':
-                return '深证成指'
-            elif fund_code == '399006':
-                return '创业板指'
-            elif fund_code == '000300':
-                return '沪深300'
-            # 国际指数
-            elif fund_code.upper() == 'HSI':
-                return '恒生指数'
-            elif fund_code.upper() == 'NDX':
-                return '纳斯达克'
-            elif fund_code.upper() == 'SPX':
-                return '标普500'
-            elif fund_code.upper() == 'VNINDEX':
-                return '越南胡志明'
-            elif fund_code.upper() == 'SENSEX':
-                return '印度孟买SENSEX'
-            elif fund_code.upper() == 'N225':
-                return '日经225'
-            elif fund_code.upper() == 'HSCEI':
-                return '国企指数'
-            # 可以继续添加更多常见指数
-        except Exception:
-            pass
+    info = resolve_code(fund_code)
+    if not info:
+        return fund_code
+
+    if info.get('type') == 'index':
+        # 优先使用别名配置中的名称
+        if info.get('alias_name'):
+            return info['alias_name']
+        # global 指数尝试从实时接口获取名称（兼容 global_* 分区）
+        market = str(info.get('market') or '')
+        if market.startswith('global'):
+            try:
+                global_data = ak.index_global_spot_em()
+                if not global_data.empty and '名称' in global_data.columns and '代码' in global_data.columns:
+                    matches = global_data[global_data['代码'].str.upper() == info.get('symbol', fund_code).upper()]
+                    if not matches.empty:
+                        name = matches.iloc[0]['名称']
+                        if isinstance(name, str) and name.strip():
+                            return name.strip()
+            except Exception:
+                pass
+        # cn 指数若无名称，回退代码
+        return fund_code
     else:
-        # 处理基金代码
-        # 优先尝试从 akshare API 获取单个基金的名称（始终优先使用API数据）
+        # 基金名称优先用 API
         try:
             fund_info = ak.fund_em_fund_info(fund=fund_code)
             if not fund_info.empty and '基金全称' in fund_info.columns:
                 api_name = fund_info['基金全称'].iloc[0]
-                if api_name and api_name.strip():
+                if isinstance(api_name, str) and api_name.strip():
                     return api_name.strip()
         except Exception:
-            pass  # API 获取失败，继续尝试其他方式
+            pass
     
     # 如果 API 获取失败，尝试使用配置文件中的名称
     if fund_code in FUND_NAMES:
@@ -241,6 +308,76 @@ def get_global_index_data(fund_code: str) -> dict:
         logging.error(f"获取全球指数 {fund_code} 数据失败: {str(e)}")
         return {}
 
+# ===== 抽象：指数数据构建与规范化 =====
+def _format_index_output(df: pd.DataFrame, days: int) -> pd.DataFrame:
+    """统一排序与截取最近 N 天输出。"""
+    if df is None or df.empty:
+        return pd.DataFrame()
+    out = df.copy()
+    if '净值日期' in out.columns:
+        out['净值日期'] = pd.to_datetime(out['净值日期'])
+        out = out.sort_values('净值日期', ascending=False)
+    return out.head(days)
+
+def _build_global_index_df(spot: dict) -> pd.DataFrame:
+    """由全球指数 spot 字典创建标准输出DataFrame。"""
+    if not spot:
+        return pd.DataFrame()
+    import datetime
+    current_time = datetime.datetime.now()
+    data = {
+        '净值日期': [current_time],
+        '单位净值': [spot['latest_price']],
+        '日增长率': [f"{spot['change_pct']}%"],
+    }
+    return pd.DataFrame(data)
+
+def _build_cn_index_df(index_data: pd.DataFrame) -> pd.DataFrame:
+    """由 A 股指数历史数据构建标准输出DataFrame，并计算日增长率。"""
+    if index_data is None or index_data.empty:
+        return pd.DataFrame()
+    df = index_data.copy()
+    df['净值日期'] = pd.to_datetime(df['date'])
+    df['单位净值'] = df['close']
+    if len(df) > 1:
+        df = df.sort_values('净值日期', ascending=False)
+        prev_close = df['close'].shift(-1)
+        df['日增长率'] = ((df['close'] - prev_close) / prev_close * 100).round(2)
+        df['日增长率'] = df['日增长率'].astype(str) + '%'
+    df = df.sort_values('净值日期', ascending=False)
+    return df
+
+def _build_cn_index_spot_df(symbol: str) -> pd.DataFrame:
+    """使用 ak.stock_zh_index_spot_em 获取实时指数快照并构造标准输出列。
+    兼容 symbol 为 'sh000001' / 'sz399001' 等，匹配时按后6位或带后缀 '.SH' '.SZ' 归一。
+    """
+    try:
+        spot = ak.stock_zh_index_spot_em()
+        if spot is None or spot.empty:
+            return pd.DataFrame()
+        core = symbol[-6:].upper() if symbol else ''
+        if not core or not core.isdigit():
+            return pd.DataFrame()
+        codes = spot['代码'].astype(str).str.upper()
+        # 兼容 000001 / 000001.SH / 399001.SZ
+        mask = (codes == core) | (codes == f"{core}.SH") | (codes == f"{core}.SZ")
+        matches = spot[mask]
+        if matches.empty:
+            return pd.DataFrame()
+        row = matches.iloc[0]
+        latest = row['最新价'] if '最新价' in row else None
+        pct = row['涨跌幅'] if '涨跌幅' in row else None
+        ts = pd.Timestamp.now()
+        data = {
+            '净值日期': [ts],
+            '单位净值': [latest],
+            '日增长率': [f"{pct}%" if pct is not None and str(pct) != '' else 'N/A'],
+        }
+        return pd.DataFrame(data)
+    except Exception as e:
+        logging.error(f"获取 A股指数实时数据失败: {symbol}, {e}")
+        return pd.DataFrame()
+
 def get_specific_fund_data(fund_code: str, days: int = 1) -> pd.DataFrame:
     """
     直接获取指定基金代码或指数代码的历史数据
@@ -253,82 +390,32 @@ def get_specific_fund_data(fund_code: str, days: int = 1) -> pd.DataFrame:
         pd.DataFrame: 包含基金或指数历史数据的DataFrame
     """
     try:
-        if is_index_code(fund_code):
-            # 处理指数代码
-            # 国际指数使用全球指数API
-            international_codes = ['HSI', 'NDX', 'SPX', 'VNINDEX', 'SENSEX', 'N225', 'HSCEI', 'AS51', 'TSX']
-            if fund_code.upper() in international_codes:
-                # 使用全球指数API获取实时数据
-                global_index_data = get_global_index_data(fund_code)
-                if not global_index_data:
-                    return pd.DataFrame()
-                
-                # 构造DataFrame格式以匹配基金数据格式
-                import datetime
-                current_time = datetime.datetime.now()
-                
-                data = {
-                    '净值日期': [current_time],
-                    '单位净值': [global_index_data['latest_price']],
-                    '日增长率': [f"{global_index_data['change_pct']}%"]
-                }
-                
-                index_data = pd.DataFrame(data)
-                index_data['净值日期'] = pd.to_datetime(index_data['净值日期'])
-                
-                return index_data
-            
-            # 中国指数使用股票指数API
-            elif fund_code == '1A0001' or fund_code == '000001':
-                # 上证指数使用 sh000001
-                index_data = ak.stock_zh_index_daily(symbol="sh000001")
-            elif fund_code == '399001':
-                # 深证成指使用 sz399001
-                index_data = ak.stock_zh_index_daily(symbol="sz399001")
-            elif fund_code == '399006':
-                # 创业板指使用 sz399006
-                index_data = ak.stock_zh_index_daily(symbol="sz399006")
-            elif fund_code == '000300':
-                # 沪深300使用 sh000300
-                index_data = ak.stock_zh_index_daily(symbol="sh000300")
-            else:
-                # 其他指数代码，尝试直接使用
-                index_data = ak.stock_zh_index_daily(symbol=fund_code)
-            
-            if index_data.empty:
-                return pd.DataFrame()
-            
-            # 转换指数数据格式以匹配基金数据格式
-            index_data = index_data.copy()
-            index_data['净值日期'] = pd.to_datetime(index_data['date'])
-            index_data['单位净值'] = index_data['close']
-            
-            # 计算日增长率
-            if len(index_data) > 1:
-                index_data = index_data.sort_values('净值日期', ascending=False)
-                prev_close = index_data['close'].shift(-1)
-                index_data['日增长率'] = ((index_data['close'] - prev_close) / prev_close * 100).round(2)
-                index_data['日增长率'] = index_data['日增长率'].astype(str) + '%'
-            
-            # 确保数据按日期降序排列（最新数据在前）
-            index_data = index_data.sort_values('净值日期', ascending=False)
-            
-            # 返回指定天数的数据
-            return index_data.head(days)
-        else:
-            # 处理基金代码
-            # 修正API调用：使用symbol参数而不是fund参数
-            fund_data = ak.fund_open_fund_info_em(symbol=fund_code, indicator="单位净值走势")
-            
-            if fund_data.empty:
-                return pd.DataFrame()
-            
-            # 确保数据按日期降序排列（最新数据在前）
-            fund_data = fund_data.sort_values('净值日期', ascending=False)
-            
-            # 返回指定天数的数据
-            return fund_data.head(days)
-        
+        info = resolve_code(fund_code)
+        if not info:
+            return pd.DataFrame()
+
+        if info.get('type') == 'index':
+            # 全球指数：实时（兼容 global_* 分区）
+            market = str(info.get('market') or '')
+            if market.startswith('global'):
+                spot = get_global_index_data(info.get('symbol', fund_code))
+                return _format_index_output(_build_global_index_df(spot), days)
+
+            # 中国指数：实时优先（始终优先使用当日实时，失败再回退历史）
+            symbol = info.get('symbol', fund_code)
+            spot_df = _build_cn_index_spot_df(symbol)
+            if spot_df is not None and not spot_df.empty:
+                return _format_index_output(spot_df, days)
+            daily = ak.stock_zh_index_daily(symbol=symbol)
+            return _format_index_output(_build_cn_index_df(daily), days)
+
+        # 基金：历史
+        fund_data = ak.fund_open_fund_info_em(symbol=info.get('symbol', fund_code), indicator="单位净值走势")
+        if fund_data.empty:
+            return pd.DataFrame()
+        fund_data = fund_data.sort_values('净值日期', ascending=False)
+        return fund_data.head(days)
+
     except Exception as e:
         logging.error(f"获取 {fund_code} 数据失败: {str(e)}")
         return pd.DataFrame()

@@ -1,0 +1,17 @@
+{
+  "items": [
+    {"code": "007360", "name": "易方达中短期美元债A"},
+    {"code": "007361", "name": "易方达中短期美元债C"},
+    {"code": "001917", "name": "招商量化精选股票A"},
+    {"code": "006195", "name": "国金量化多因子股票A"},
+    {"code": "019670", "name": "广发港股创新药ETF联接A"},
+    {"code": "270042", "name": "广发纳指100ETF联接（QDII）A"},
+
+    {"code": "000001", "name": ""},
+    {"code": "HSI", "name": "恒生指数"},
+    {"code": "NDX", "name": "纳斯达克"},
+    {"code": "SPX", "name": "标普500"},
+    {"code": "VNINDEX", "name": "越南胡志明"},
+    {"code": "SENSEX", "name": "印度孟买SENSEX"}
+  ]
+}
