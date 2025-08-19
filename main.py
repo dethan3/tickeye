@@ -15,7 +15,7 @@ import logging
 # 添加项目路径
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from fund_analysis import get_fund_summary, OWNED_FUNDS
+from fund_analysis import get_fund_summary, get_owned_funds
 from feishu_notifier import FeishuNotifier
 from feishu_config import get_config
 
@@ -79,14 +79,15 @@ def get_all_fund_summaries(days=1):
     Returns:
         list: 基金分析数据列表
     """
-    if not OWNED_FUNDS:
+    owned_funds, _ = get_owned_funds()
+    if not owned_funds:
         logger.error("未配置任何基金代码！")
         return []
     
-    logger.info(f"开始获取 {len(OWNED_FUNDS)} 只基金的数据...")
+    logger.info(f"开始获取 {len(owned_funds)} 个标的的数据...")
     
     fund_summaries = []
-    for fund_code in OWNED_FUNDS:
+    for fund_code in owned_funds:
         logger.info(f"正在获取基金 {fund_code} 的数据...")
         summary = get_fund_summary(fund_code, days)
         fund_summaries.append(summary)
