@@ -4,6 +4,56 @@
 
 [中文版 README](README_CN.md)
 
+## 🐳 Docker Deployment
+
+### Quick Start with Docker
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/tickeye.git
+cd tickeye
+
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Run manually
+docker build -t tickeye .
+docker run -d --name tickeye-fund-monitor tickeye
+```
+
+### Environment Variables
+
+Create a `.env` file for configuration:
+
+```bash
+# Feishu notification configuration
+FEISHU_WEBHOOK_URL=your_webhook_url_here
+FEISHU_ENABLED=true
+
+# Log level
+LOG_LEVEL=INFO
+```
+
+### Docker Configuration
+
+The Docker setup includes:
+- Multi-stage build for smaller image size
+- Non-root user for security
+- Health checks
+- Environment variable support
+- Volume mounting for configuration files
+
+```bash
+# View logs
+docker-compose logs -f tickeye
+
+# Stop the service
+docker-compose down
+
+# Rebuild and restart
+docker-compose up -d --build
+```
+
 ## 📌 Features
 
 - **Fund & Index Tracking**: Monitor your funds and major indices (global and China)
