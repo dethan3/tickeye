@@ -11,6 +11,10 @@ import sys
 import os
 from datetime import datetime
 import logging
+from dotenv import load_dotenv
+
+# 加载环境变量
+load_dotenv()
 
 # 添加项目路径
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
