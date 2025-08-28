@@ -63,3 +63,8 @@ logs/
 # Config files with sensitive data
 config/secrets.yaml
 config/api_keys.yaml
+
+# Node.js
+node_modules/
+package-lock.json
+yarn.lock
