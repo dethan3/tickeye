@@ -1,0 +1,32 @@
+{
+  "name": "tickeye",
+  "version": "1.0.0",
+  "license": "AGPL-3.0-only",
+  "author": "yiwei",
+  "contributors": [
+    "shiy2008@gmail.com"
+  ],
+  "description": "**TickEye** is a lightweight, no-frontend fund monitoring tool that tracks your purchased funds and provides daily performance analysis using AkShare API.",
+  "keywords": [
+    "fund",
+    "monitor"
+  ],
+  "type": "module",
+  "dependencies": {
+    "pymport": "^1.5.1",
+    "pythonia": "^1.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.0",
+    "tsx": "^4.20.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "pymport"
+    ]
+  },
+  "scripts": {
+    "test": "tsx src/"
+  }
+}
