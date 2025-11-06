@@ -82,6 +82,7 @@ def safe_get_column_value(df: pd.DataFrame, row_idx: int, column: str, default=N
 
 # ==================== 全局变量延迟初始化 ====================
 _config_cache = {}
+_fund_name_api_cache: Optional[Dict[str, str]] = None
 
 def get_owned_funds() -> Tuple[List[str], Dict[str, str]]:
     """延迟加载基金配置，避免模块导入时失败"""
@@ -264,6 +265,45 @@ def load_funds_config(config_file='funds_config.txt'):
 
     return owned_funds, fund_names
 
+def _load_fund_name_api_cache() -> Dict[str, str]:
+    """
+    调用 akshare 获取基金代码与名称映射并进行缓存
+    """
+    global _fund_name_api_cache
+    if _fund_name_api_cache is not None:
+        return _fund_name_api_cache
+
+    try:
+        from akshare.fund import fund_em as ak_fund_em
+    except Exception:
+        _fund_name_api_cache = {}
+        return _fund_name_api_cache
+
+    try:
+        name_df = ak_fund_em.fund_name_em()
+        if name_df is None or name_df.empty:
+            _fund_name_api_cache = {}
+            return _fund_name_api_cache
+
+        required_cols = {'基金代码', '基金简称'}
+        if not required_cols.issubset(set(name_df.columns)):
+            logging.warning("基金名称接口返回数据缺少必需列: %s", required_cols)
+            _fund_name_api_cache = {}
+            return _fund_name_api_cache
+
+        name_df['基金代码'] = name_df['基金代码'].astype(str).str.strip()
+        name_df['基金简称'] = name_df['基金简称'].astype(str).str.strip()
+        _fund_name_api_cache = {
+            row['基金代码']: row['基金简称']
+            for _, row in name_df.iterrows()
+            if row['基金代码'] and row['基金简称']
+        }
+    except Exception as e:
+        logging.warning("通过 akshare 获取基金名称失败: %s", e)
+        _fund_name_api_cache = {}
+
+    return _fund_name_api_cache
+
 def is_valid_code(code: str) -> bool:
     """
     验证基金代码或指数代码格式
@@ -334,14 +374,12 @@ def get_fund_name(fund_code: str) -> str:
         return fund_code
     else:
         # 基金名称优先用 API
-        try:
-            fund_info = ak.fund_em_fund_info(fund=fund_code)
-            if not fund_info.empty and '基金全称' in fund_info.columns:
-                api_name = fund_info['基金全称'].iloc[0]
-                if isinstance(api_name, str) and api_name.strip():
-                    return api_name.strip()
-        except Exception:
-            pass
+        api_names = _load_fund_name_api_cache()
+        api_name = api_names.get(fund_code)
+        if not api_name and fund_code.lstrip('0'):
+            api_name = api_names.get(fund_code.lstrip('0'))
+        if api_name:
+            return api_name
     
     # 如果 API 获取失败，尝试使用配置文件中的名称
     _, fund_names = get_owned_funds()
