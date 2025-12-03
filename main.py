@@ -12,6 +12,9 @@ import os
 from datetime import datetime
 import logging
 from dotenv import load_dotenv
+import json
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from typing import Optional, Dict, Any
 
 # 加载环境变量
 load_dotenv()
@@ -196,6 +199,100 @@ def send_fund_analysis_to_feishu(days=1, send_summary=True, send_table=False):
         return False
 
 
+def make_fc_response(body: str, status_code: int = 200, headers: Optional[Dict[str, str]] = None, is_base64: bool = False) -> dict:
+    """构造函数计算要求的响应结构"""
+    return {
+        "isBase64Encoded": bool(is_base64),
+        "statusCode": int(status_code),
+        "headers": headers or {"Content-Type": "application/json; charset=utf-8"},
+        "body": body if isinstance(body, str) else str(body),
+    }
+
+
+class TickEyeHandler(BaseHTTPRequestHandler):
+    server_version = "TickEyeHTTP/1.0"
+
+    def _read_json(self) -> dict:
+        try:
+            length = int(self.headers.get('Content-Length', '0'))
+        except ValueError:
+            length = 0
+        raw = self.rfile.read(length) if length > 0 else b""
+        if not raw:
+            return {}
+        try:
+            return json.loads(raw.decode('utf-8'))
+        except Exception:
+            return {}
+
+    def _send_json(self, obj: dict, http_status: int = 200):
+        payload = json.dumps(obj, ensure_ascii=False).encode('utf-8')
+        self.send_response(http_status)
+        # 以HTTP响应形式返回，但正文是一个JSON对象（即FC所需结构）
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Content-Length', str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
+
+    def log_message(self, format: str, *args):
+        # 重定向到标准日志
+        logger.info("%s - %s" % (self.address_string(), format % args))
+
+    def do_POST(self):
+        try:
+            data = self._read_json()
+            path = self.path.rstrip('/')
+            if path == '/init':
+                logger.info(f"/init 接收到请求: %s", data)
+                resp = make_fc_response("Hello init\n", status_code=200)
+                self._send_json(resp, 200)
+            elif path == '/invoke':
+                logger.info(f"/invoke 接收到请求: %s", data)
+                # 支持从请求体传入参数
+                days = int(data.get('days', 1)) if isinstance(data, dict) else 1
+                send_summary = bool(data.get('send_summary', True)) if isinstance(data, dict) else True
+                send_table = bool(data.get('send_table', False)) if isinstance(data, dict) else False
+
+                try:
+                    ok = send_fund_analysis_to_feishu(days=days, send_summary=send_summary, send_table=send_table)
+                    body = json.dumps({
+                        "message": "Hello invoke\n",
+                        "ok": ok,
+                        "params": {"days": days, "send_summary": send_summary, "send_table": send_table}
+                    }, ensure_ascii=False)
+                    resp = make_fc_response(body, status_code=200)
+                    self._send_json(resp, 200)
+                except Exception as e:
+                    logger.exception("执行 /invoke 出错")
+                    body = json.dumps({"error": str(e)}, ensure_ascii=False)
+                    resp = make_fc_response(body, status_code=500)
+                    self._send_json(resp, 500)
+            else:
+                resp = make_fc_response(json.dumps({"error": "Not Found"}, ensure_ascii=False), status_code=404)
+                self._send_json(resp, 404)
+        except Exception as e:
+            logger.exception("处理请求失败")
+            resp = make_fc_response(json.dumps({"error": "Bad Request"}, ensure_ascii=False), status_code=400)
+            self._send_json(resp, 400)
+
+
+def run_server(host: str = '0.0.0.0', port: Optional[int] = None):
+    if port is None:
+        try:
+            port = int(os.getenv('PORT', '8000'))
+        except ValueError:
+            port = 8000
+    httpd = ThreadingHTTPServer((host, port), TickEyeHandler)
+    logger.info(f"HTTP Server started on http://{host}:{port} (POST /init, POST /invoke)")
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        httpd.server_close()
+        logger.info("HTTP Server stopped")
+
+
 def main():
     """主函数"""
     # 默认参数
@@ -227,4 +324,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # 默认以HTTP服务模式运行；如需命令行一次性执行，使用：python main.py cli [days] [table]
+    if len(sys.argv) > 1 and sys.argv[1].lower() == 'cli':
+        # 移除“cli”参数，保持后续参数位置不变
+        sys.argv.pop(1)
+        main()
+    else:
+        run_server()

@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  tickeye:
+    build: .
+    container_name: tickeye-fund-monitor
+    restart: unless-stopped
+    environment:
+      # 飞书配置（通过环境变量或配置文件）
+      - FEISHU_WEBHOOK_URL=${FEISHU_WEBHOOK_URL}
+      - FEISHU_ENABLED=${FEISHU_ENABLED:-true}
+      
+      # 基金配置文件路径
+      - FUNDS_CONFIG_PATH=/app/funds_config.json
+      - INDICES_CONFIG_PATH=/app/indices_config.json
+      
+      # 日志级别
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      
+    volumes:
+      # 挂载配置文件（可选）
+      - ./config:/app/config:ro
+      
+      # 挂载日志目录（可选）
+      - ./logs:/app/logs
+      
+    # 定时任务配置
+    # 使用cron或外部调度器来运行定时任务
+    # 示例：每天早上9点运行
+    # command: >
+    #   sh -c "echo '0 9 * * * python main.py' | crontab - && 
+    #          crond -f -l 8"
+    
+    # 或者手动运行
+    # command: python main.py
+    
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # 网络配置
+    networks:
+      - tickeye-network
+
+  # 可选：添加Redis用于缓存（如果需要）
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: tickeye-redis
+  #   restart: unless-stopped
+  #   volumes:
+  #     - redis_data:/data
+  #   command: redis-server --appendonly yes
+  #   networks:
+  #     - tickeye-network
+
+# 网络配置
+networks:
+  tickeye-network:
+    driver: bridge
+
+# 数据卷（如果启用Redis）
+# volumes:
+#   redis_data:
+#     driver: local
