@@ -7,7 +7,8 @@
 ## 📌 Features
 
 - **Fund & Index Tracking**: Monitor your funds and major indices (global and China)
-- **Real-time Indices**: Global indices via `index_global_spot_em`; China indices via `stock_zh_index_spot_em` (default to same-day spot, fallback to daily history)
+- **Real-time Indices**:  
+  - Combined support for China and major global indices, with built-in retry and fallback logic to reduce `N/A` values
 - **Flexible Configuration**: Configure items in `funds_config.json` (supports funds and indices)
 - **Smart Name Resolution**: Automatically fetch fund names via API when not provided
 - **Performance Analysis**: Daily net value and percentage change tracking
@@ -76,9 +77,31 @@ Use `funds_config.json` to configure funds and indices:
 Notes:
 - For funds, use the 6-digit code (e.g., `001917`).
 - For China indices, you can use alias `000001` (mapped to `sh000001` internally) or direct symbol `sh000001`/`sz399001`.
-- For global indices, use tickers like `HSI`, `NDX`, `SPX`, `VNINDEX`, etc.
+- For global indices, use tickers like `HSI`, `NDX`, `SPX`, or other symbols you configure in `indices_config.json`.
 - `name` is optional; when empty, the tool will resolve via API/config.
 - Optional: you can add/adjust index aliases in `indices_config.json`.
+
+### Data Sources
+
+- **Funds**  
+  - Uses AkShare to fetch historical net asset values and basic fund information, with in-memory caching of fund names to reduce repeated API calls.
+
+- **Indices**  
+  - China indices prefer intraday snapshots and automatically fall back to recent daily history when intraday data is unavailable.  
+  - Global indices support key benchmarks (such as HSI, SPX, NDX) with robust retry / fallback handling; other indices degrade gracefully and may display `N/A` when upstream data providers are unstable.
+
+### Index Coverage & Limitations
+
+- The default configuration in `funds_config.json` monitors a small set of funds plus several major indices (e.g., Shanghai Composite, HSI, NDX, SPX).  
+- Additional indices can be added, but data availability ultimately depends on upstream data providers; some symbols may occasionally return `N/A` or sparse history.  
+- The tool is designed to **fail gracefully**: when an index cannot be retrieved, it is reported as `N/A` with logging, without breaking the overall report.
+
+### Adding or Extending Indices
+
+- To monitor a new index:
+  1. (Optional) Add or adjust its alias in `indices_config.json` so that a short code (e.g., `HSI`, `SPX`) maps to the correct underlying symbol and display name.  
+  2. Add the index code to the `items` list in `funds_config.json`, alongside your funds.
+- Different global indices may be supported to different degrees by upstream data sources; if a newly added symbol does not appear in the report or shows `N/A`, check the logs to see whether the data provider returned anything for that code.
 
 ### 5. Run Fund/Index Analysis
 

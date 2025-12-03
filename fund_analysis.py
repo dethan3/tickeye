@@ -83,6 +83,12 @@ def safe_get_column_value(df: pd.DataFrame, row_idx: int, column: str, default=N
 # ==================== 全局变量延迟初始化 ====================
 _config_cache = {}
 _fund_name_api_cache: Optional[Dict[str, str]] = None
+_global_index_data_cache: Optional[pd.DataFrame] = None
+_global_index_cache_loaded: bool = False
+_US_INDEX_SYMBOL_MAP = {
+    "SPX": ".INX",
+    "NDX": ".NDX",
+}
 
 def get_owned_funds() -> Tuple[List[str], Dict[str, str]]:
     """延迟加载基金配置，避免模块导入时失败"""
@@ -357,19 +363,6 @@ def get_fund_name(fund_code: str) -> str:
         # 优先使用别名配置中的名称
         if info.get('alias_name'):
             return info['alias_name']
-        # global 指数尝试从实时接口获取名称（兼容 global_* 分区）
-        market = str(info.get('market') or '')
-        if market.startswith('global'):
-            try:
-                global_data = ak.index_global_spot_em()
-                if not global_data.empty and '名称' in global_data.columns and '代码' in global_data.columns:
-                    matches = global_data[global_data['代码'].str.upper() == info.get('symbol', fund_code).upper()]
-                    if not matches.empty:
-                        name = matches.iloc[0]['名称']
-                        if isinstance(name, str) and name.strip():
-                            return name.strip()
-            except Exception:
-                pass
         # cn 指数若无名称，回退代码
         return fund_code
     else:
@@ -402,35 +395,106 @@ def get_global_index_data(fund_code: str) -> dict:
     Returns:
         dict: 包含指数数据的字典，如果失败返回空字典
     """
+    code_upper = str(fund_code).strip().upper() if fund_code is not None else ""
     try:
-        global_data = ak.index_global_spot_em()
-        if global_data.empty:
-            return {}
-        
-        # 验证必需的列是否存在
-        required_cols = [DataColumns.CODE, DataColumns.NAME, DataColumns.LATEST_PRICE, 
-                        DataColumns.CHANGE_PCT, DataColumns.UPDATE_TIME]
-        if not validate_dataframe(global_data, required_cols):
-            logging.error(f"全球指数数据格式不正确，缺少必需列: {required_cols}")
-            return {}
-        
-        # 查找匹配的指数
-        matches = global_data[global_data[DataColumns.CODE].str.upper() == fund_code.upper()]
-        
-        if matches.empty:
-            return {}
-        
-        # 获取第一个匹配的指数数据
-        index_row = matches.iloc[0]
-        
-        return {
-            'code': safe_get_column_value(matches, 0, DataColumns.CODE),
-            'name': safe_get_column_value(matches, 0, DataColumns.NAME),
-            'latest_price': safe_get_column_value(matches, 0, DataColumns.LATEST_PRICE),
-            'change_pct': safe_get_column_value(matches, 0, DataColumns.CHANGE_PCT),
-            'update_time': safe_get_column_value(matches, 0, DataColumns.UPDATE_TIME)
-        }
-        
+        info = resolve_code(code_upper)
+        alias_name = info.get('alias_name') if info else None
+
+        # 1) 先使用新浪接口获取数据（针对已知支持的指数）
+        if code_upper == "HSI":
+            try:
+                hk_df = ak.stock_hk_index_spot_sina()
+                if hk_df is not None and not hk_df.empty:
+                    subset = hk_df[hk_df["名称"] == "恒生指数"]
+                    if not subset.empty:
+                        row = subset.iloc[0]
+                        latest_price = row.get("最新价")
+                        change_pct = row.get("涨跌幅")
+                        return {
+                            'code': code_upper,
+                            'name': str(row.get("名称", "恒生指数")),
+                            'latest_price': float(latest_price) if latest_price is not None else None,
+                            'change_pct': float(change_pct) if change_pct is not None else None,
+                            'update_time': None,
+                        }
+            except Exception as e:
+                logging.error(f"通过新浪接口获取恒生指数 {code_upper} 数据失败: {str(e)}")
+
+        if code_upper in _US_INDEX_SYMBOL_MAP:
+            symbol = _US_INDEX_SYMBOL_MAP[code_upper]
+            try:
+                us_df = ak.index_us_stock_sina(symbol=symbol)
+                if us_df is not None and not us_df.empty:
+                    # 按日期排序，取最后两行计算涨跌幅
+                    if 'date' in us_df.columns:
+                        us_df = us_df.sort_values('date')
+                    latest = us_df.iloc[-1]
+                    latest_close = float(latest.get('close', 0.0) or 0.0)
+                    change_pct = 0.0
+                    if len(us_df) > 1:
+                        prev = us_df.iloc[-2]
+                        prev_close = float(prev.get('close', 0.0) or 0.0)
+                        if prev_close:
+                            change_pct = round((latest_close - prev_close) / prev_close * 100, 2)
+                    name = "标普500" if code_upper == "SPX" else "纳斯达克"
+                    return {
+                        'code': code_upper,
+                        'name': name,
+                        'latest_price': latest_close,
+                        'change_pct': change_pct,
+                        'update_time': str(latest.get('date')),
+                    }
+            except Exception as e:
+                logging.error(f"通过新浪接口获取美股指数 {code_upper} 数据失败: {str(e)}")
+
+        # 2) 新浪失败时，再使用东财全球指数接口兜底
+        try:
+            em_df = ak.index_global_spot_em()
+        except Exception as e:
+            logging.error(f"通过东财接口获取全球指数 {fund_code} 数据失败: {str(e)}")
+            em_df = None
+
+        if em_df is not None and not em_df.empty:
+            try:
+                code_col = '指数代码' if '指数代码' in em_df.columns else ('代码' if '代码' in em_df.columns else None)
+                name_col = '指数名称' if '指数名称' in em_df.columns else ('名称' if '名称' in em_df.columns else None)
+                price_col = '最新价' if '最新价' in em_df.columns else None
+                pct_col = '涨跌幅' if '涨跌幅' in em_df.columns else None
+
+                if code_col and price_col and pct_col:
+                    subset = pd.DataFrame()
+                    codes = em_df[code_col].astype(str).str.upper()
+                    candidates = [code_upper]
+                    if info and info.get('symbol'):
+                        sym_str = str(info['symbol']).upper()
+                        if sym_str not in candidates:
+                            candidates.append(sym_str)
+                    mask = codes.isin(candidates)
+                    subset = em_df[mask]
+
+                    if (subset is None or subset.empty) and name_col and alias_name:
+                        names = em_df[name_col].astype(str)
+                        subset = em_df[names == alias_name]
+
+                    if subset is not None and not subset.empty:
+                        row = subset.iloc[0]
+                        latest_price = row.get(price_col)
+                        change_pct = row.get(pct_col)
+                        return {
+                            'code': code_upper,
+                            'name': alias_name or (str(row.get(name_col)) if name_col else code_upper),
+                            'latest_price': float(latest_price) if latest_price is not None else None,
+                            'change_pct': float(change_pct) if change_pct is not None else None,
+                            'update_time': None,
+                        }
+            except Exception as e:
+                logging.error(f"解析东财全球指数 {fund_code} 数据失败: {str(e)}")
+
+        # 3) 仍然失败：无可用数据源
+        if code_upper:
+            logging.warning(f"未配置全球指数 {code_upper} 的可用数据源，返回空结果")
+        return {}
+
     except (ConnectionError, TimeoutError) as e:
         logging.error(f"网络连接失败，获取全球指数 {fund_code} 数据: {str(e)}")
         return {}
@@ -490,40 +554,63 @@ def _build_cn_index_df(index_data: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def _build_cn_index_spot_df(symbol: str) -> pd.DataFrame:
-    """使用 ak.stock_zh_index_spot_em 获取实时指数快照并构造标准输出列。
-    兼容 symbol 为 'sh000001' / 'sz399001' 等，匹配时按后6位或带后缀 '.SH' '.SZ' 归一。
+    """使用 ak.stock_zh_index_spot_sina 获取实时指数快照并构造标准输出列。
+    兼容 symbol 为 'sh000001' / 'sz399001' 等，匹配时按后 6 位或完整代码归一。
     """
     try:
-        spot = ak.stock_zh_index_spot_em()
-        if spot is None or spot.empty:
+        if not symbol:
             return pd.DataFrame()
-        core = symbol[-6:].upper() if symbol else ''
-        if not core or not core.isdigit():
-            return pd.DataFrame()
-        
-        # 验证必需的列是否存在
-        required_cols = [DataColumns.CODE, DataColumns.LATEST_PRICE, DataColumns.CHANGE_PCT]
-        if not validate_dataframe(spot, required_cols):
-            logging.error(f"A股指数实时数据格式不正确，缺少必需列: {required_cols}")
-            return pd.DataFrame()
-        
-        codes = spot[DataColumns.CODE].astype(str).str.upper()
-        # 兼容 000001 / 000001.SH / 399001.SZ
-        mask = (codes == core) | (codes == f"{core}.SH") | (codes == f"{core}.SZ")
-        matches = spot[mask]
-        if matches.empty:
-            return pd.DataFrame()
-        
-        latest = safe_get_column_value(matches, 0, DataColumns.LATEST_PRICE)
-        pct = safe_get_column_value(matches, 0, DataColumns.CHANGE_PCT)
-        ts = pd.Timestamp.now()
-        
-        data = {
-            DataColumns.DATE: [ts],
-            DataColumns.NET_VALUE: [latest],
-            DataColumns.DAILY_CHANGE: [f"{pct}%" if pct is not None and str(pct) != '' else 'N/A'],
-        }
-        return pd.DataFrame(data)
+
+        symbol_str = str(symbol).strip()
+
+        def _build_from_spot(spot: pd.DataFrame) -> pd.DataFrame:
+            if spot is None or spot.empty:
+                return pd.DataFrame()
+            # 验证必需的列是否存在
+            required_cols = [DataColumns.CODE, DataColumns.LATEST_PRICE, DataColumns.CHANGE_PCT]
+            if not validate_dataframe(spot, required_cols):
+                logging.error(f"A股指数实时数据格式不正确，缺少必需列: {required_cols}")
+                return pd.DataFrame()
+
+            codes = spot[DataColumns.CODE].astype(str).str.lower()
+            sym_lower = symbol_str.lower()
+            core = symbol_str[-6:].lower()
+            # 兼容 sh000001 / sz399001 / 000001 等形式（通过完整代码或后 6 位匹配）
+            mask = (codes == sym_lower) | codes.str.endswith(core)
+            matches = spot[mask]
+            if matches.empty:
+                return pd.DataFrame()
+
+            latest = safe_get_column_value(matches, 0, DataColumns.LATEST_PRICE)
+            pct = safe_get_column_value(matches, 0, DataColumns.CHANGE_PCT)
+            ts = pd.Timestamp.now()
+
+            data = {
+                DataColumns.DATE: [ts],
+                DataColumns.NET_VALUE: [latest],
+                DataColumns.DAILY_CHANGE: [f"{pct}%" if pct is not None and str(pct) != '' else 'N/A'],
+            }
+            return pd.DataFrame(data)
+
+        # 1) 新浪优先
+        try:
+            sina_spot = ak.stock_zh_index_spot_sina()
+            sina_df = _build_from_spot(sina_spot)
+            if sina_df is not None and not sina_df.empty:
+                return sina_df
+        except Exception as e:
+            logging.error(f"通过新浪接口获取 A股指数实时数据失败: {symbol}, {e}")
+
+        # 2) 东财兜底
+        try:
+            em_spot = ak.stock_zh_index_spot_em(symbol="沪深重要指数")
+            em_df = _build_from_spot(em_spot)
+            if em_df is not None and not em_df.empty:
+                return em_df
+        except Exception as e:
+            logging.error(f"通过东财接口获取 A股指数实时数据失败: {symbol}, {e}")
+
+        return pd.DataFrame()
     except Exception as e:
         logging.error(f"获取 A股指数实时数据失败: {symbol}, {e}")
         return pd.DataFrame()

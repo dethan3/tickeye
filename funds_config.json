@@ -1,12 +1,11 @@
 {
   "items": [
+    {"code": "015596", "name": "国泰国证有色金属行业指数(LOF)C"},
     {"code": "019671", "name": "广发港股创新药ETF联接(QDII)C"},
     {"code": "021842", "name": "国富全球科技互联混合(QDII)人民币C"},
     {"code": "000001", "name": "上证指数"},
     {"code": "HSI", "name": "恒生指数"},
     {"code": "NDX", "name": "纳斯达克"},
-    {"code": "SPX", "name": "标普500"},
-    {"code": "VNINDEX", "name": "越南胡志明"},
-    {"code": "SENSEX", "name": "印度孟买SENSEX"}
+    {"code": "SPX", "name": "标普500"}
   ]
 }
