@@ -1,0 +1,66 @@
+{
+  "enabled": true,
+  "notification_channels": {
+    "email": {
+      "enabled": false,
+      "smtp_server": "smtp.example.com",
+      "smtp_port": 587,
+      "smtp_username": "user@example.com",
+      "smtp_password": "",
+      "sender_email": "user@example.com",
+      "receiver_emails": ["user@example.com"]
+    },
+    "feishu": {
+      "enabled": true,
+      "webhook_url": "",
+      "template": "default"
+    },
+    "wechat_work": {
+      "enabled": false,
+      "webhook_url": "",
+      "key": ""
+    },
+    "dingtalk": {
+      "enabled": false,
+      "webhook_url": "",
+      "secret": ""
+    },
+    "telegram": {
+      "enabled": false,
+      "bot_token": "",
+      "chat_id": ""
+    }
+  },
+  "rules": [
+    {
+      "code": "000001",
+      "name": "上证指数",
+      "threshold": 5.0,
+      "direction": "up",
+      "enabled": true,
+      "notification_channels": ["feishu"]
+    },
+    {
+      "code": "000001",
+      "name": "上证指数",
+      "threshold": -3.0,
+      "direction": "down",
+      "enabled": true,
+      "notification_channels": ["feishu"]
+    },
+    {
+      "code": "NDX",
+      "name": "纳斯达克",
+      "threshold": 3.0,
+      "direction": "up",
+      "enabled": true,
+      "notification_channels": ["feishu"]
+    }
+  ],
+  "global_settings": {
+    "cooldown_minutes": 30,
+    "max_alerts_per_day": 10,
+    "enable_daily_summary": true,
+    "summary_time": "18:00"
+  }
+}
