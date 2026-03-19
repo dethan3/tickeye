@@ -22,6 +22,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from fund_analysis import get_fund_summary, get_owned_funds
 from feishu_notifier import FeishuNotifier
 from feishu_config import get_config
+from alert_manager import check_and_send_alerts, get_alert_manager
 
 # 配置日志
 logging.basicConfig(
@@ -187,6 +188,19 @@ def send_fund_analysis_to_feishu(days=1, send_summary=True, send_table=False):
     print("📋 执行结果汇总:")
     print(f"  📊 基金数据: {success_count}/{total_funds} 只成功")
     print(f"  📤 飞书通知: {success_notifications}/{total_notifications} 条成功")
+    
+    # 检查并发送告警
+    print("\n🔔 正在检查告警规则...")
+    try:
+        alerts = check_and_send_alerts(feishu_data)
+        if alerts:
+            print(f"  ⚠️  触发了 {len(alerts)} 个告警:")
+            for alert in alerts:
+                print(f"    • {alert['message']}")
+        else:
+            print("  ✅ 未触发任何告警")
+    except Exception as e:
+        print(f"  ❌ 告警检查失败: {e}")
     
     if success_notifications == total_notifications:
         print("🎉 基金监测与通知任务完成！")

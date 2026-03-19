@@ -1,0 +1,106 @@
+{
+  "enabled": true,
+  "notification_channels": {
+    "email": {
+      "enabled": false,
+      "smtp_server": "smtp.gmail.com",
+      "smtp_port": 587,
+      "smtp_username": "your-email@gmail.com",
+      "smtp_password": "your-app-password",
+      "sender_email": "your-email@gmail.com",
+      "receiver_emails": ["recipient@example.com"]
+    },
+    "feishu": {
+      "enabled": true,
+      "webhook_url": "https://open.feishu.cn/open-apis/bot/v2/hook/your-webhook-token",
+      "template": "default"
+    },
+    "wechat_work": {
+      "enabled": false,
+      "webhook_url": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=your-key",
+      "key": "your-key"
+    },
+    "dingtalk": {
+      "enabled": false,
+      "webhook_url": "https://oapi.dingtalk.com/robot/send?access_token=your-token",
+      "secret": "your-secret-if-has"
+    },
+    "telegram": {
+      "enabled": false,
+      "bot_token": "your-bot-token",
+      "chat_id": "your-chat-id"
+    }
+  },
+  "rules": [
+    {
+      "code": "000001",
+      "name": "上证指数",
+      "threshold": 5.0,
+      "direction": "up",
+      "enabled": true,
+      "notification_channels": ["feishu"]
+    },
+    {
+      "code": "000001",
+      "name": "上证指数",
+      "threshold": -3.0,
+      "direction": "down",
+      "enabled": true,
+      "notification_channels": ["feishu"]
+    },
+    {
+      "code": "HSI",
+      "name": "恒生指数",
+      "threshold": 4.0,
+      "direction": "up",
+      "enabled": true,
+      "notification_channels": ["feishu"]
+    },
+    {
+      "code": "HSI",
+      "name": "恒生指数",
+      "threshold": -2.5,
+      "direction": "down",
+      "enabled": true,
+      "notification_channels": ["feishu"]
+    },
+    {
+      "code": "NDX",
+      "name": "纳斯达克",
+      "threshold": 3.0,
+      "direction": "up",
+      "enabled": true,
+      "notification_channels": ["feishu"]
+    },
+    {
+      "code": "NDX",
+      "name": "纳斯达克",
+      "threshold": -2.0,
+      "direction": "down",
+      "enabled": true,
+      "notification_channels": ["feishu"]
+    },
+    {
+      "code": "015596",
+      "name": "国泰国证有色金属行业指数(LOF)C",
+      "threshold": 5.0,
+      "direction": "up",
+      "enabled": true,
+      "notification_channels": ["feishu"]
+    },
+    {
+      "code": "015596",
+      "name": "国泰国证有色金属行业指数(LOF)C",
+      "threshold": -3.0,
+      "direction": "down",
+      "enabled": true,
+      "notification_channels": ["feishu"]
+    }
+  ],
+  "global_settings": {
+    "cooldown_minutes": 30,
+    "max_alerts_per_day": 10,
+    "enable_daily_summary": true,
+    "summary_time": "18:00"
+  }
+}
