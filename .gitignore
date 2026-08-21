@@ -68,3 +68,12 @@ config/api_keys.yaml
 node_modules/
 package-lock.json
 yarn.lock
+
+# TickEye local data
+data/*
+!data/.gitkeep
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
