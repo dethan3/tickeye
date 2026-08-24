@@ -1,138 +1,102 @@
-# 🦉 TickEye
+# TickEye V2
 
-**TickEye** is a lightweight, no-frontend fund monitoring tool that tracks your purchased funds and provides daily performance analysis using AkShare API.
+TickEye 是一个本地优先的个人投资决策支持与风险控制工具。它围绕一个核心问题展开：
 
-[中文版 README](README_CN.md)
+> 我的钱现在处于什么风险状态？
 
-## 📌 Features
+系统不替用户作出买卖决定，而是持续整理持仓、关注标的和市场变化中的风险信号，给出可追溯的事实、解释与行动前检查，帮助用户控制风险并提高长期获得收益的概率。
 
-- **Fund & Index Tracking**: Monitor your funds and major indices (global and China)
-- **Real-time Indices**:  
-  - Combined support for China and major global indices, with built-in retry and fallback logic to reduce `N/A` values
-- **Flexible Configuration**: Configure items in `funds_config.json` (supports funds and indices)
-- **Smart Name Resolution**: Automatically fetch fund names via API when not provided
-- **Performance Analysis**: Daily net value and percentage change tracking
-- **Multi-item Support**: Monitor multiple funds/indices simultaneously
-- **Clean Output**: Beautiful console output with trend indicators (📈📉➡️)
+当前分支正在按 [V2 产品描述](v2_product.md) 和 [开发计划](v2_development_plan.md) 重建。V1 脚本暂时保留，尚未接入 V2 应用。
 
----
+## 当前进度
 
-## ⚙️ Tech Stack
+工程基线已经具备：
 
-| Component         | Tech / Tool                  |
-|------------------|------------------------------|
-| Language          | Python 3.8+                  |
-| Data Source       | AkShare API                   |
-| Data Processing   | pandas                        |
-| HTTP Client       | requests                      |
-| Config Parsing    | JSON file parsing             |
+- FastAPI API 与统一错误响应
+- SQLite 本地数据库和 Alembic 迁移
+- React、TypeScript、Vite 前端
+- 前端开发代理及 FastAPI 单进程生产托管
+- 从 OpenAPI 自动生成的前端接口类型
+- Python 与前端的基础测试、类型检查和静态检查
 
----
+目前页面只用于验证整条技术链路。持仓、观察列表和风险分析从后续迭代开始实现。
 
-## 🚀 Quick Start
+## 本地开发
 
-### Prerequisites
-
-- Python 3.8 or higher
-- Internet connection for API access
-
-### 1. Clone the Repository
+需要 Python 3.11+、[uv](https://docs.astral.sh/uv/) 和 Node.js 22+，前端包管理器使用 pnpm。
 
 ```bash
-git clone https://github.com/yourusername/tickeye.git
-cd tickeye
+uv sync --group dev
+pnpm --dir frontend install
+cp .env.example .env
+.venv/bin/alembic upgrade head
 ```
 
-### 2. Create Virtual Environment (Recommended)
+分别启动后端和前端：
 
 ```bash
-python -m venv tickeye_env
-source tickeye_env/bin/activate  # On Windows: tickeye_env\Scripts\activate
+.venv/bin/tickeye --reload
 ```
-
-### 3. Install Dependencies
 
 ```bash
-pip install -r requirements.txt
+pnpm --dir frontend dev
 ```
 
-### 4. Configure Your Items
+浏览器打开 `http://127.0.0.1:5173`。Vite 会把 `/api` 请求代理到 `http://127.0.0.1:8000`。
 
-Use `funds_config.json` to configure funds and indices:
+## 单进程运行
 
-```json
-{
-  "items": [
-    {"code": "007360", "name": "易方达中短期美元债A"},
-    {"code": "001917", "name": "招商量化精选股票A"},
-
-    {"code": "000001", "name": ""},           
-    {"code": "HSI", "name": "恒生指数"},      
-    {"code": "NDX", "name": "纳斯达克"},      
-    {"code": "SPX", "name": "标普500"}
-  ]
-}
-```
-
-Notes:
-- For funds, use the 6-digit code (e.g., `001917`).
-- For China indices, you can use alias `000001` (mapped to `sh000001` internally) or direct symbol `sh000001`/`sz399001`.
-- For global indices, use tickers like `HSI`, `NDX`, `SPX`, or other symbols you configure in `indices_config.json`.
-- `name` is optional; when empty, the tool will resolve via API/config.
-- Optional: you can add/adjust index aliases in `indices_config.json`.
-
-### Data Sources
-
-- **Funds**  
-  - Uses AkShare to fetch historical net asset values and basic fund information, with in-memory caching of fund names to reduce repeated API calls.
-
-- **Indices**  
-  - China indices prefer intraday snapshots and automatically fall back to recent daily history when intraday data is unavailable.  
-  - Global indices support key benchmarks (such as HSI, SPX, NDX) with robust retry / fallback handling; other indices degrade gracefully and may display `N/A` when upstream data providers are unstable.
-
-### Index Coverage & Limitations
-
-- The default configuration in `funds_config.json` monitors a small set of funds plus several major indices (e.g., Shanghai Composite, HSI, NDX, SPX).  
-- Additional indices can be added, but data availability ultimately depends on upstream data providers; some symbols may occasionally return `N/A` or sparse history.  
-- The tool is designed to **fail gracefully**: when an index cannot be retrieved, it is reported as `N/A` with logging, without breaking the overall report.
-
-### Adding or Extending Indices
-
-- To monitor a new index:
-  1. (Optional) Add or adjust its alias in `indices_config.json` so that a short code (e.g., `HSI`, `SPX`) maps to the correct underlying symbol and display name.  
-  2. Add the index code to the `items` list in `funds_config.json`, alongside your funds.
-- Different global indices may be supported to different degrees by upstream data sources; if a newly added symbol does not appear in the report or shows `N/A`, check the logs to see whether the data provider returned anything for that code.
-
-### 5. Run Fund/Index Analysis
+前端构建后，FastAPI 会直接托管静态文件和前端路由：
 
 ```bash
-# Monitor for 1 day (default); indices default to same-day spot
-python fund_analysis.py
-
-# Request multiple days of history (funds use history; indices still prefer spot by default)
-python fund_analysis.py 7
+pnpm --dir frontend build
+.venv/bin/alembic upgrade head
+.venv/bin/tickeye
 ```
 
-### 6. Understanding the Output
+然后打开 `http://127.0.0.1:8000`。
 
-The tool provides a comprehensive report with:
+## API 类型同步
 
-- **Code & Name**: Funds and indices; names auto-resolved
-- **Latest Date**: Most recent trading date or current timestamp for spot indices
-- **Net Value / Spot**: Unit NAV (fund) or index level
-- **Change %**: Daily percentage change (spot for indices; close-to-close for history)
-- **Trend**: Visual indicators (📈 up, 📉 down, ➡️ flat)
-- **Summary**: Overall statistics and success rate
+后端接口契约改变后，重新导出 OpenAPI 并生成 TypeScript 类型：
 
-### 7. Configuration Tips
+```bash
+.venv/bin/tickeye-export-openapi frontend/src/api/openapi.json
+pnpm --dir frontend generate:api
+```
 
-- **Smart Name Resolution**: The tool prioritizes API-fetched names over config file names for accuracy
-- **Error Handling**: Invalid fund codes are automatically skipped with error messages
-- **Flexible Format**: Mix both `code|name` and `code` formats in the same config file
-- **Comments**: Use `#` for comments and documentation in your config file
+`frontend/src/api/generated/` 是生成目录，不要手工修改。
 
----
+## 质量检查
 
-## 📄 License
+```bash
+.venv/bin/ruff check src tests
+.venv/bin/mypy src
+.venv/bin/pytest
+pnpm --dir frontend typecheck
+pnpm --dir frontend test
+pnpm --dir frontend lint
+pnpm --dir frontend build
+```
 
-[MIT License](LICENSE)
+## 项目结构
+
+```text
+src/tickeye/          V2 Python 应用
+  domain/             领域模型与规则
+  application/        用例编排
+  infrastructure/     数据库与外部数据源
+  web/                FastAPI 接口与前端托管
+frontend/             React 前端
+migrations/           Alembic 数据库迁移
+tests/                Python 测试
+data/                 本地数据（不提交）
+```
+
+## 产品边界
+
+TickEye 提供信息组织、风险解释和决策支持，不承诺收益，不代替用户决策，也不把尚未具备的数据包装成精确结论。MVP 暂不输出缺少现金流账本支撑的收益归因，也暂不实现机会分析。
+
+## License
+
+[MIT](LICENSE)

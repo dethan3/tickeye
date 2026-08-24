@@ -9,6 +9,47 @@ description = "Personal investment decision support and risk control system"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
+dependencies = [
+    "alembic>=1.16,<2",
+    "fastapi>=0.116,<1",
+    "pydantic-settings>=2.10,<3",
+    "sqlalchemy>=2.0,<3",
+    "uvicorn[standard]>=0.35,<1",
+]
+
+[dependency-groups]
+dev = [
+    "httpx2>=2,<3",
+    "mypy>=1.17,<2",
+    "pytest>=8.4,<10",
+    "pytest-cov>=6.2,<8",
+    "ruff>=0.12,<1",
+]
+
+[project.scripts]
+tickeye = "tickeye.cli:main"
+tickeye-export-openapi = "tickeye.web.openapi:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers"
+testpaths = ["tests"]
+
+[tool.ruff]
+include = ["src/**/*.py", "tests/**/*.py"]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["tickeye"]
+
+[tool.coverage.run]
+branch = true
+source = ["tickeye"]

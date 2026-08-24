@@ -1,121 +1,94 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useQuery } from '@tanstack/react-query'
+import { Route, Routes } from 'react-router-dom'
+import { getHealth } from './api/health'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+function StatusPanel() {
+  const health = useQuery({
+    queryKey: ['system', 'health'],
+    queryFn: ({ signal }) => getHealth(signal),
+    retry: false,
+    staleTime: 30_000,
+  })
+
+  if (health.isPending) {
+    return (
+      <section className="status-card" aria-live="polite">
+        <span className="status-dot status-dot--pending" aria-hidden="true" />
+        <div>
+          <p className="status-label">系统状态</p>
+          <h2>正在连接本地服务…</h2>
+        </div>
+      </section>
+    )
+  }
+
+  if (health.isError) {
+    return (
+      <section className="status-card status-card--error" aria-live="polite">
+        <span className="status-dot status-dot--error" aria-hidden="true" />
+        <div className="status-content">
+          <p className="status-label">系统状态</p>
+          <h2>本地服务暂时不可用</h2>
+          <p className="status-detail">{health.error.message}</p>
+          <button type="button" onClick={() => void health.refetch()}>
+            重新连接
+          </button>
+        </div>
+      </section>
+    )
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <section className="status-card" aria-live="polite">
+      <span className="status-dot status-dot--ok" aria-hidden="true" />
+      <div className="status-content">
+        <p className="status-label">系统状态</p>
+        <h2>系统已就绪</h2>
+        <div className="status-meta">
+          <span>API 正常</span>
+          <span>数据库正常</span>
+          <span>v{health.data.version}</span>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+      </div>
+    </section>
+  )
+}
+
+function HomePage() {
+  return (
+    <div className="app-shell">
+      <header className="topbar">
+        <a className="brand" href="/" aria-label="TickEye 首页">
+          <span className="brand-mark" aria-hidden="true">T</span>
+          <span>TickEye</span>
+        </a>
+        <span className="local-badge">本地运行</span>
+      </header>
+
+      <main>
+        <section className="intro">
+          <p className="eyebrow">个人投资风险控制台</p>
+          <h1>你的钱，<br />现在安全吗？</h1>
+          <p className="intro-copy">
+            TickEye 将从持仓、关注标的和市场变化中整理风险信号，帮助你在行动前看清依据。
           </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+        </section>
+        <StatusPanel />
+      </main>
 
-      <div className="ticks"></div>
+      <footer>
+        当前为 V2 工程基线，持仓与风险分析能力将在后续迭代接入。
+      </footer>
+    </div>
+  )
+}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+function App() {
+  return (
+    <Routes>
+      <Route path="*" element={<HomePage />} />
+    </Routes>
   )
 }
 

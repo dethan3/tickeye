@@ -79,9 +79,9 @@ MVP 完成的判断标准不是“页面已经打开”，而是用户可以回�
 | ORM/迁移 | SQLAlchemy 2.x + Alembic | 显式模型和版本化迁移，未来可切换 PostgreSQL |
 | 数据分析 | pandas + NumPy | 价格序列对齐、收益序列和风险指标计算 |
 | 数据源 | AkShare 适配器 + CSV/手工输入 | 复用现有经验，但统一输出数据和错误语义 |
-| 后端测试 | pytest + FastAPI TestClient | 覆盖纯计算、数据库、provider 和 API 集成 |
+| 后端测试 | pytest + async ASGI client | 覆盖纯计算、数据库、provider 和 API 集成 |
 | 前端测试 | Vitest + Testing Library + Playwright | 覆盖组件状态、API 交互和关键用户路径 |
-| 工程质量 | Ruff + mypy + ESLint + TypeScript | 分别检查 Python 与前端类型和代码质量 |
+| 工程质量 | Ruff + mypy + Oxlint + TypeScript | 分别检查 Python 与前端类型和代码质量 |
 
 Python 依赖统一迁移到 `pyproject.toml`，前端依赖由 `frontend/package.json` 和 `pnpm-lock.yaml` 管理。生产依赖和开发依赖分组，锁定可复现版本后再开始功能开发。
 
@@ -404,7 +404,7 @@ API 返回统一包含：
 - 建立 React 应用框架、前端路由、API client、QueryClient 和健康状态页。
 - 配置前端构建产物由 FastAPI 同源托管，确保 SPA fallback 不拦截 `/api/v1`。
 - 配置 SQLAlchemy、Alembic 和 SQLite 数据目录。
-- 配置 pytest、Ruff、mypy、Vitest、ESLint、TypeScript 和统一日志。
+- 配置 pytest、Ruff、mypy、Vitest、Oxlint、TypeScript 和统一日志。
 - 增加 `.env.example` 与本地配置说明。
 
 验收：
