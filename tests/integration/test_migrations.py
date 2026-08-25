@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, inspect, text
 
 
 def test_empty_database_upgrades_to_head(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -20,7 +20,26 @@ def test_empty_database_upgrades_to_head(tmp_path: Path, monkeypatch: pytest.Mon
             revision = connection.execute(
                 text("SELECT version_num FROM alembic_version")
             ).scalar_one()
+        tables = set(inspect(engine).get_table_names())
     finally:
         engine.dispose()
 
-    assert revision == "20260824_0001"
+    assert revision == "20260825_0007"
+    assert {
+        "profiles",
+        "instruments",
+        "accounts",
+        "positions",
+        "position_snapshots",
+        "market_observations",
+        "market_refreshes",
+        "risk_snapshots",
+        "policy_rules",
+        "risk_evaluations",
+        "insight_events",
+        "scenarios",
+        "scenario_operations",
+        "scenario_comparisons",
+        "watchlists",
+        "watchlist_items",
+    } <= tables

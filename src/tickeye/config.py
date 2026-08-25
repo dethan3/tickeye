@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     debug: bool = False
     host: str = "127.0.0.1"
     port: int = 8000
+    market_data_max_attempts: int = 3
+    market_data_retry_delay_seconds: float = 0.5
     database_url: str = f"sqlite:///{PROJECT_ROOT / 'data' / 'tickeye.db'}"
     frontend_dist_dir: Path = PROJECT_ROOT / "frontend" / "dist"
     cors_origins: tuple[str, ...] = (

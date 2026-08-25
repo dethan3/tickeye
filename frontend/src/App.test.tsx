@@ -24,14 +24,16 @@ afterEach(() => {
 })
 
 describe('App', () => {
-  it('shows the backend and database as ready', async () => {
+  it('opens on the risk workspace empty state', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(
         JSON.stringify({
-          status: 'ok',
-          service: 'tickeye-api',
-          version: '2.0.0.dev0',
-          database: { status: 'ok' },
+          data: null,
+          as_of: null,
+          calculated_at: '2026-08-24T01:00:00Z',
+          coverage: null,
+          warnings: ['尚未生成风险快照。'],
+          methodology_version: 'historical-risk-v1',
         }),
         { status: 200, headers: { 'Content-Type': 'application/json' } },
       ),
@@ -39,22 +41,28 @@ describe('App', () => {
 
     renderApp()
 
-    expect(screen.getByText('正在连接本地服务…')).toBeInTheDocument()
-    expect(await screen.findByText('系统已就绪')).toBeInTheDocument()
-    expect(screen.getByText('数据库正常')).toBeInTheDocument()
+    expect(screen.getByText('正在读取风险快照…')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /你的钱.*现在安全吗/ }))
+      .toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '先检查数据' })).toHaveAttribute(
+      'href',
+      '/data-quality',
+    )
   })
 
-  it('lets the user retry a failed connection', async () => {
+  it('lets the user retry a failed risk snapshot request', async () => {
     const fetchMock = vi
       .spyOn(globalThis, 'fetch')
       .mockRejectedValueOnce(new Error('无法连接服务'))
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            status: 'ok',
-            service: 'tickeye-api',
-            version: '2.0.0.dev0',
-            database: { status: 'ok' },
+            data: null,
+            as_of: null,
+            calculated_at: '2026-08-24T01:00:00Z',
+            coverage: null,
+            warnings: [],
+            methodology_version: 'historical-risk-v1',
           }),
           { status: 200 },
         ),
@@ -62,9 +70,10 @@ describe('App', () => {
 
     renderApp()
 
-    expect(await screen.findByText('本地服务暂时不可用')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: '重新连接' }))
-    expect(await screen.findByText('系统已就绪')).toBeInTheDocument()
+    expect(await screen.findByText('无法读取风险快照')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: '重新读取' }))
+    expect(await screen.findByRole('button', { name: '生成第一份风险快照' }))
+      .toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 })

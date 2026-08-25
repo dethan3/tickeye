@@ -18,6 +18,26 @@
   border-bottom: 1px solid var(--line);
 }
 
+.topbar nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.topbar nav a {
+  padding: 7px 10px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 620;
+  text-decoration: none;
+}
+
+.topbar nav a.active {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
@@ -50,7 +70,7 @@
   font-weight: 650;
 }
 
-main {
+.home-main {
   flex: 1;
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(330px, 0.75fr);
@@ -89,6 +109,18 @@ h1 {
   color: var(--muted);
   font-size: 17px;
   line-height: 1.8;
+}
+
+.home-action {
+  display: inline-flex;
+  margin-top: 30px;
+  padding: 11px 16px;
+  border-radius: 10px;
+  color: #fff;
+  background: var(--green);
+  font-size: 14px;
+  font-weight: 680;
+  text-decoration: none;
 }
 
 .status-card {
@@ -175,7 +207,12 @@ footer {
   border-top: 1px solid var(--line);
   color: #77817a;
   font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
 }
+
+footer a { color: var(--green); white-space: nowrap; }
 
 @media (max-width: 780px) {
   .app-shell {
@@ -186,11 +223,20 @@ footer {
     min-height: 68px;
   }
 
-  main {
+  .home-main {
     grid-template-columns: 1fr;
     gap: 52px;
     align-items: start;
     padding: 68px 0 74px;
+  }
+
+  .topbar nav {
+    margin-left: auto;
+    overflow-x: auto;
+  }
+
+  .local-badge {
+    display: none;
   }
 
   h1 {

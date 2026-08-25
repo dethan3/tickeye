@@ -1,0 +1,1 @@
+"""Pure domain unit tests."""

@@ -2,9 +2,21 @@
 
 from pathlib import Path
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine, make_url
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import ConnectionPoolEntry
+
+
+def _enable_sqlite_foreign_keys(
+    dbapi_connection: object,
+    _connection_record: ConnectionPoolEntry,
+) -> None:
+    cursor = dbapi_connection.cursor()  # type: ignore[attr-defined]
+    try:
+        cursor.execute("PRAGMA foreign_keys=ON")
+    finally:
+        cursor.close()
 
 
 def _ensure_sqlite_directory(database_url: str) -> None:
@@ -22,12 +34,15 @@ def create_db_engine(database_url: str, *, echo: bool = False) -> Engine:
 
     _ensure_sqlite_directory(database_url)
     connect_args = {"check_same_thread": False} if database_url.startswith("sqlite") else {}
-    return create_engine(
+    engine = create_engine(
         database_url,
         connect_args=connect_args,
         echo=echo,
         pool_pre_ping=True,
     )
+    if database_url.startswith("sqlite"):
+        event.listen(engine, "connect", _enable_sqlite_foreign_keys)
+    return engine
 
 
 def create_session_factory(engine: Engine) -> sessionmaker[Session]:

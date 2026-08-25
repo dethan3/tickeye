@@ -4,6 +4,11 @@ __pycache__/
 *$py.class
 *.so
 .Python
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.pytype/
+.hypothesis/
 build/
 develop-eggs/
 dist/
@@ -37,6 +42,10 @@ venv.bak/
 .env.test.local
 .env.production.local
 
+# Local AI and editor workspaces
+.agents/
+.codex/
+
 # IDE
 .vscode/
 .idea/
@@ -61,6 +70,10 @@ logs/
 *.tmp
 *.temp
 .coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.cache/
 
 # Config files with sensitive data
 config/secrets.yaml
@@ -68,13 +81,21 @@ config/api_keys.yaml
 
 # Node.js
 node_modules/
+.pnpm-store/
 package-lock.json
 yarn.lock
+frontend/.vite/
+frontend/coverage/
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
 
 # TickEye local data
 data/*
 !data/.gitkeep
+backups/
 *.db
+*.db-journal
 *.db-shm
 *.db-wal
 *.sqlite

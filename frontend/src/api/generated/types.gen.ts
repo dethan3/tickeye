@@ -5,6 +5,54 @@ export type ClientOptions = {
 };
 
 /**
+ * AddScenarioOperationRequest
+ */
+export type AddScenarioOperationRequest = {
+    operation_type: ScenarioOperationType;
+    /**
+     * Instrument Id
+     */
+    instrument_id?: number | null;
+    /**
+     * Amount
+     */
+    amount?: number | string | null;
+    /**
+     * Target Weight
+     */
+    target_weight?: number | string | null;
+    /**
+     * Estimated Cost
+     */
+    estimated_cost?: number | string;
+};
+
+/**
+ * AssetClass
+ *
+ * Broad exposure groups used by later portfolio risk calculations.
+ */
+export type AssetClass = 'equity' | 'fixed_income' | 'mixed' | 'cash' | 'commodity' | 'other';
+
+/**
+ * ComparisonWindowSchema
+ */
+export type ComparisonWindowSchema = {
+    /**
+     * Start
+     */
+    start: string | null;
+    /**
+     * End
+     */
+    end: string | null;
+    /**
+     * Observations
+     */
+    observations: number;
+};
+
+/**
  * ComponentHealth
  *
  * Status of one dependency checked by the API.
@@ -14,6 +62,236 @@ export type ComponentHealth = {
      * Status
      */
     status: 'ok' | 'error';
+};
+
+/**
+ * CorrelationEntrySchema
+ */
+export type CorrelationEntrySchema = {
+    /**
+     * Left Code
+     */
+    left_code: string;
+    /**
+     * Right Code
+     */
+    right_code: string;
+    /**
+     * Value
+     */
+    value: string | null;
+};
+
+/**
+ * CreateScenarioRequest
+ */
+export type CreateScenarioRequest = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Candidate Instrument Id
+     */
+    candidate_instrument_id?: number | null;
+    /**
+     * Stress Assumptions
+     */
+    stress_assumptions?: Array<StressAssumptionInput>;
+};
+
+/**
+ * CreateWatchlistRequest
+ */
+export type CreateWatchlistRequest = {
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
+ * DataQualityCoverage
+ */
+export type DataQualityCoverage = {
+    /**
+     * Tracked Count
+     */
+    tracked_count: number;
+    /**
+     * Available Count
+     */
+    available_count: number;
+    /**
+     * Problem Count
+     */
+    problem_count: number;
+};
+
+/**
+ * DataQualityData
+ */
+export type DataQualityData = {
+    /**
+     * Items
+     */
+    items: Array<DataQualityItemSchema>;
+};
+
+/**
+ * DataQualityItemSchema
+ */
+export type DataQualityItemSchema = {
+    /**
+     * Instrument Id
+     */
+    instrument_id: number;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Name
+     */
+    name: string;
+    instrument_type: InstrumentType;
+    status: DataQualityStatus;
+    /**
+     * Last Observation Date
+     */
+    last_observation_date: string | null;
+    /**
+     * Latest Value
+     */
+    latest_value: string | null;
+    value_type: MarketValueType | null;
+    /**
+     * Source
+     */
+    source: string | null;
+    /**
+     * Sample Count
+     */
+    sample_count: number;
+    /**
+     * Freshness Days
+     */
+    freshness_days: number | null;
+    /**
+     * Freshness Limit Days
+     */
+    freshness_limit_days: number | null;
+    /**
+     * Rejected Rate
+     */
+    rejected_rate: string | null;
+    /**
+     * Last Refresh At
+     */
+    last_refresh_at: string | null;
+    last_refresh_status: RefreshStatus | null;
+    /**
+     * Failure Code
+     */
+    failure_code: string | null;
+    /**
+     * Failure Message
+     */
+    failure_message: string | null;
+    /**
+     * Limitations
+     */
+    limitations: Array<string>;
+};
+
+/**
+ * DataQualityResponse
+ */
+export type DataQualityResponse = {
+    data: DataQualityData;
+    /**
+     * As Of
+     */
+    as_of: string | null;
+    /**
+     * Calculated At
+     */
+    calculated_at: string;
+    coverage: DataQualityCoverage;
+    /**
+     * Warnings
+     */
+    warnings: Array<string>;
+    /**
+     * Methodology Version
+     */
+    methodology_version?: 'data-quality-v1';
+};
+
+/**
+ * DataQualityStatus
+ */
+export type DataQualityStatus = 'good' | 'partial' | 'stale' | 'missing' | 'refresh_failed' | 'short_history' | 'not_applicable';
+
+/**
+ * EventData
+ */
+export type EventData = {
+    /**
+     * Items
+     */
+    items: Array<InsightEventSchema>;
+};
+
+/**
+ * EventResponse
+ */
+export type EventResponse = {
+    data: EventData;
+    /**
+     * Calculated At
+     */
+    calculated_at: string;
+    /**
+     * Warnings
+     */
+    warnings: Array<string>;
+    /**
+     * Methodology Version
+     */
+    methodology_version?: 'insight-events-v1';
+};
+
+/**
+ * ExposureSchema
+ */
+export type ExposureSchema = {
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Value
+     */
+    value: string;
+    /**
+     * Weight
+     */
+    weight: string;
+};
+
+/**
+ * HTTPValidationError
+ */
+export type HttpValidationError = {
+    /**
+     * Detail
+     */
+    detail?: Array<ValidationError>;
 };
 
 /**
@@ -37,6 +315,1493 @@ export type HealthResponse = {
     database: ComponentHealth;
 };
 
+/**
+ * HistoricalMetricsSchema
+ */
+export type HistoricalMetricsSchema = {
+    /**
+     * Aligned Observations
+     */
+    aligned_observations: number;
+    /**
+     * Return Samples
+     */
+    return_samples: number;
+    /**
+     * Window Start
+     */
+    window_start: string | null;
+    /**
+     * Window End
+     */
+    window_end: string | null;
+    /**
+     * Annualized Volatility
+     */
+    annualized_volatility: string | null;
+    /**
+     * Downside Volatility
+     */
+    downside_volatility: string | null;
+    /**
+     * Max Drawdown
+     */
+    max_drawdown: string | null;
+    /**
+     * Current Drawdown
+     */
+    current_drawdown: string | null;
+};
+
+/**
+ * ImportConfirmedResponse
+ */
+export type ImportConfirmedResponse = {
+    /**
+     * Mode
+     */
+    mode?: 'confirm';
+    portfolio: PortfolioResponse;
+};
+
+/**
+ * ImportPreviewData
+ */
+export type ImportPreviewData = {
+    /**
+     * Preview Token
+     */
+    preview_token: string;
+    /**
+     * Valid
+     */
+    valid: boolean;
+    /**
+     * Duplicate Import
+     */
+    duplicate_import: boolean;
+    /**
+     * Positions
+     */
+    positions: Array<PositionInputSchemaOutput>;
+    /**
+     * Issues
+     */
+    issues: Array<ValidationIssueSchema>;
+};
+
+/**
+ * ImportPreviewResponse
+ */
+export type ImportPreviewResponse = {
+    /**
+     * Mode
+     */
+    mode?: 'preview';
+    data: ImportPreviewData;
+};
+
+/**
+ * InsightEventSchema
+ */
+export type InsightEventSchema = {
+    /**
+     * Event Id
+     */
+    event_id: number;
+    /**
+     * Event Type
+     */
+    event_type: string;
+    /**
+     * Finding Key
+     */
+    finding_key: string;
+    /**
+     * From State
+     */
+    from_state: string | null;
+    /**
+     * To State
+     */
+    to_state: string;
+    /**
+     * Severity
+     */
+    severity: string;
+    /**
+     * Occurred At
+     */
+    occurred_at: string;
+    finding: RiskFindingEventSchema;
+};
+
+/**
+ * InstrumentType
+ *
+ * Asset forms supported by the first local portfolio slice.
+ */
+export type InstrumentType = 'fund' | 'etf' | 'qdii_fund' | 'cash';
+
+/**
+ * MarketRefreshData
+ */
+export type MarketRefreshData = {
+    /**
+     * Results
+     */
+    results: Array<RefreshResultSchema>;
+    quality: DataQualityResponse;
+};
+
+/**
+ * MarketRefreshRequest
+ */
+export type MarketRefreshRequest = {
+    /**
+     * Instrument Ids
+     */
+    instrument_ids?: Array<number> | null;
+};
+
+/**
+ * MarketRefreshResponse
+ */
+export type MarketRefreshResponse = {
+    data: MarketRefreshData;
+};
+
+/**
+ * MarketValueType
+ */
+export type MarketValueType = 'cumulative_nav' | 'unit_nav' | 'adjusted_close' | 'index_close';
+
+/**
+ * PolicyData
+ */
+export type PolicyData = {
+    /**
+     * Revision
+     */
+    revision: number;
+    /**
+     * Rules
+     */
+    rules: Array<PolicyRuleSchema>;
+};
+
+/**
+ * PolicyEvaluationSchema
+ */
+export type PolicyEvaluationSchema = {
+    /**
+     * Evaluation Id
+     */
+    evaluation_id: number;
+    /**
+     * Policy Revision
+     */
+    policy_revision: number;
+    state: RiskState;
+    /**
+     * Calculated At
+     */
+    calculated_at: string;
+    /**
+     * Findings
+     */
+    findings: Array<PolicyFindingSchema>;
+};
+
+/**
+ * PolicyFindingSchema
+ */
+export type PolicyFindingSchema = {
+    /**
+     * Finding Key
+     */
+    finding_key: string;
+    /**
+     * Dimension
+     */
+    dimension: string;
+    state: RiskState;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Current Value
+     */
+    current_value: string | null;
+    /**
+     * Boundary Low
+     */
+    boundary_low: string | null;
+    /**
+     * Boundary High
+     */
+    boundary_high: string | null;
+    /**
+     * Contributor Key
+     */
+    contributor_key: string | null;
+    /**
+     * Contributor Label
+     */
+    contributor_label: string | null;
+    /**
+     * Policy Rule Id
+     */
+    policy_rule_id: number | null;
+};
+
+/**
+ * PolicyResponse
+ */
+export type PolicyResponse = {
+    data: PolicyData;
+    /**
+     * Calculated At
+     */
+    calculated_at: string;
+    /**
+     * Warnings
+     */
+    warnings: Array<string>;
+    /**
+     * Methodology Version
+     */
+    methodology_version?: 'policy-rules-v1';
+};
+
+/**
+ * PolicyRuleInput
+ */
+export type PolicyRuleInput = {
+    /**
+     * Id
+     */
+    id?: number | null;
+    rule_type: PolicyRuleType;
+    /**
+     * Subject Key
+     */
+    subject_key: string;
+    /**
+     * Threshold
+     */
+    threshold: number | string;
+    /**
+     * Tolerance
+     */
+    tolerance?: number | string | null;
+    /**
+     * Warning Ratio
+     */
+    warning_ratio: number | string;
+    /**
+     * Enabled
+     */
+    enabled?: boolean;
+};
+
+/**
+ * PolicyRuleSchema
+ */
+export type PolicyRuleSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    rule_type: PolicyRuleType;
+    /**
+     * Subject Key
+     */
+    subject_key: string;
+    /**
+     * Subject Label
+     */
+    subject_label: string;
+    /**
+     * Threshold
+     */
+    threshold: string;
+    /**
+     * Tolerance
+     */
+    tolerance: string | null;
+    /**
+     * Warning Ratio
+     */
+    warning_ratio: string;
+    /**
+     * Enabled
+     */
+    enabled: boolean;
+};
+
+/**
+ * PolicyRuleType
+ */
+export type PolicyRuleType = 'instrument_max_weight' | 'asset_class_max_weight' | 'cash_min_weight' | 'asset_class_target_weight';
+
+/**
+ * PortfolioCoverage
+ */
+export type PortfolioCoverage = {
+    /**
+     * Account Count
+     */
+    account_count: number;
+    /**
+     * Position Count
+     */
+    position_count: number;
+};
+
+/**
+ * PortfolioData
+ */
+export type PortfolioData = {
+    /**
+     * Profile Id
+     */
+    profile_id: number;
+    /**
+     * Profile Name
+     */
+    profile_name: string;
+    /**
+     * Base Currency
+     */
+    base_currency: string;
+    /**
+     * Revision
+     */
+    revision: number;
+    /**
+     * Positions
+     */
+    positions: Array<PositionSchema>;
+    /**
+     * Latest Snapshot At
+     */
+    latest_snapshot_at: string | null;
+};
+
+/**
+ * PortfolioImportRequest
+ */
+export type PortfolioImportRequest = {
+    /**
+     * Mode
+     */
+    mode?: 'preview' | 'confirm';
+    /**
+     * Csv Content
+     */
+    csv_content: string;
+    /**
+     * Preview Token
+     */
+    preview_token?: string | null;
+    /**
+     * Expected Revision
+     */
+    expected_revision?: number | null;
+};
+
+/**
+ * PortfolioResponse
+ */
+export type PortfolioResponse = {
+    data: PortfolioData;
+    /**
+     * As Of
+     */
+    as_of: string | null;
+    /**
+     * Calculated At
+     */
+    calculated_at: string;
+    coverage: PortfolioCoverage;
+    /**
+     * Warnings
+     */
+    warnings: Array<string>;
+    /**
+     * Methodology Version
+     */
+    methodology_version?: 'portfolio-facts-v1';
+};
+
+/**
+ * PositionInputSchema
+ */
+export type PositionInputSchemaInput = {
+    /**
+     * Id
+     */
+    id?: number | null;
+    /**
+     * Account Name
+     */
+    account_name: string;
+    /**
+     * Institution
+     */
+    institution?: string | null;
+    /**
+     * Account Currency
+     */
+    account_currency?: string;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Name
+     */
+    name?: string | null;
+    instrument_type?: InstrumentType | null;
+    /**
+     * Market
+     */
+    market: string;
+    /**
+     * Instrument Currency
+     */
+    instrument_currency?: string | null;
+    asset_class?: AssetClass | null;
+    /**
+     * Region
+     */
+    region?: string | null;
+    /**
+     * Quantity
+     */
+    quantity?: number | string | null;
+    /**
+     * Manual Value
+     */
+    manual_value?: number | string | null;
+    /**
+     * Cost
+     */
+    cost?: number | string | null;
+    /**
+     * As Of
+     */
+    as_of: string;
+};
+
+/**
+ * PositionInputSchema
+ */
+export type PositionInputSchemaOutput = {
+    /**
+     * Id
+     */
+    id?: number | null;
+    /**
+     * Account Name
+     */
+    account_name: string;
+    /**
+     * Institution
+     */
+    institution?: string | null;
+    /**
+     * Account Currency
+     */
+    account_currency?: string;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Name
+     */
+    name?: string | null;
+    instrument_type?: InstrumentType | null;
+    /**
+     * Market
+     */
+    market: string;
+    /**
+     * Instrument Currency
+     */
+    instrument_currency?: string | null;
+    asset_class?: AssetClass | null;
+    /**
+     * Region
+     */
+    region?: string | null;
+    /**
+     * Quantity
+     */
+    quantity?: string | null;
+    /**
+     * Manual Value
+     */
+    manual_value?: string | null;
+    /**
+     * Cost
+     */
+    cost?: string | null;
+    /**
+     * As Of
+     */
+    as_of: string;
+};
+
+/**
+ * PositionSchema
+ */
+export type PositionSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Account Id
+     */
+    account_id: number;
+    /**
+     * Account Name
+     */
+    account_name: string;
+    /**
+     * Institution
+     */
+    institution: string | null;
+    /**
+     * Account Currency
+     */
+    account_currency: string;
+    /**
+     * Instrument Id
+     */
+    instrument_id: number;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Name
+     */
+    name: string;
+    instrument_type: InstrumentType;
+    /**
+     * Market
+     */
+    market: string;
+    /**
+     * Instrument Currency
+     */
+    instrument_currency: string;
+    asset_class: AssetClass;
+    /**
+     * Region
+     */
+    region: string;
+    /**
+     * Quantity
+     */
+    quantity: string | null;
+    /**
+     * Manual Value
+     */
+    manual_value: string | null;
+    /**
+     * Cost
+     */
+    cost: string | null;
+    /**
+     * As Of
+     */
+    as_of: string;
+};
+
+/**
+ * PositionValuationSchema
+ */
+export type PositionValuationSchema = {
+    /**
+     * Position Id
+     */
+    position_id: number;
+    /**
+     * Instrument Id
+     */
+    instrument_id: number;
+    /**
+     * Account Name
+     */
+    account_name: string;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Name
+     */
+    name: string;
+    instrument_type: InstrumentType;
+    asset_class: AssetClass;
+    /**
+     * Value
+     */
+    value: string | null;
+    /**
+     * Weight
+     */
+    weight: string | null;
+    valuation_source: ValuationSource;
+    /**
+     * Value As Of
+     */
+    value_as_of: string | null;
+};
+
+/**
+ * RefreshResultSchema
+ */
+export type RefreshResultSchema = {
+    /**
+     * Instrument Id
+     */
+    instrument_id: number;
+    /**
+     * Code
+     */
+    code: string;
+    status: RefreshStatus;
+    /**
+     * Accepted Rows
+     */
+    accepted_rows: number;
+    /**
+     * Written Rows
+     */
+    written_rows: number;
+    /**
+     * Error Code
+     */
+    error_code: string | null;
+    /**
+     * Error Message
+     */
+    error_message: string | null;
+};
+
+/**
+ * RefreshStatus
+ */
+export type RefreshStatus = 'success' | 'error' | 'skipped';
+
+/**
+ * ReplacePoliciesRequest
+ */
+export type ReplacePoliciesRequest = {
+    /**
+     * Expected Revision
+     */
+    expected_revision: number;
+    /**
+     * Rules
+     */
+    rules: Array<PolicyRuleInput>;
+};
+
+/**
+ * ReplacePositionsRequest
+ */
+export type ReplacePositionsRequest = {
+    /**
+     * Expected Revision
+     */
+    expected_revision: number;
+    /**
+     * Positions
+     */
+    positions: Array<PositionInputSchemaInput>;
+};
+
+/**
+ * RiskAnalysisSchema
+ */
+export type RiskAnalysisSchema = {
+    status: RiskCalculationStatus;
+    /**
+     * Portfolio As Of
+     */
+    portfolio_as_of: string | null;
+    /**
+     * Market Data As Of
+     */
+    market_data_as_of: string | null;
+    /**
+     * Positions
+     */
+    positions: Array<PositionValuationSchema>;
+    /**
+     * Instrument Exposures
+     */
+    instrument_exposures: Array<ExposureSchema>;
+    /**
+     * Asset Class Exposures
+     */
+    asset_class_exposures: Array<ExposureSchema>;
+    coverage: RiskCoverageSchema;
+    metrics: HistoricalMetricsSchema;
+    /**
+     * Correlations
+     */
+    correlations: Array<CorrelationEntrySchema>;
+    /**
+     * Evidence
+     */
+    evidence: Array<RiskEvidenceSchema>;
+    /**
+     * Assumptions
+     */
+    assumptions: Array<string>;
+    /**
+     * Limitations
+     */
+    limitations: Array<string>;
+    /**
+     * Methodology Version
+     */
+    methodology_version: 'historical-risk-v1';
+};
+
+/**
+ * RiskCalculationStatus
+ */
+export type RiskCalculationStatus = 'available' | 'unknown' | 'all_cash';
+
+/**
+ * RiskCoverageSchema
+ */
+export type RiskCoverageSchema = {
+    /**
+     * Total Positions
+     */
+    total_positions: number;
+    /**
+     * Valued Positions
+     */
+    valued_positions: number;
+    /**
+     * Historical Positions
+     */
+    historical_positions: number;
+    /**
+     * Known Portfolio Value
+     */
+    known_portfolio_value: string;
+    /**
+     * Valued Position Ratio
+     */
+    valued_position_ratio: string;
+    /**
+     * Historical Value Ratio
+     */
+    historical_value_ratio: string | null;
+};
+
+/**
+ * RiskEvidenceCode
+ */
+export type RiskEvidenceCode = 'empty_portfolio' | 'incomplete_valuation' | 'missing_history' | 'stale_history' | 'refresh_failed' | 'insufficient_aligned_history' | 'zero_variance_correlation' | 'mixed_valuation_dates';
+
+/**
+ * RiskEvidenceSchema
+ */
+export type RiskEvidenceSchema = {
+    code: RiskEvidenceCode;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Instrument Id
+     */
+    instrument_id?: number | null;
+    /**
+     * Instrument Code
+     */
+    instrument_code?: string | null;
+};
+
+/**
+ * RiskFindingEventSchema
+ */
+export type RiskFindingEventSchema = {
+    /**
+     * Finding Key
+     */
+    finding_key: string;
+    /**
+     * Dimension
+     */
+    dimension: string;
+    /**
+     * State
+     */
+    state: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Current Value
+     */
+    current_value: string | null;
+    /**
+     * Boundary Low
+     */
+    boundary_low: string | null;
+    /**
+     * Boundary High
+     */
+    boundary_high: string | null;
+    /**
+     * Contributor Key
+     */
+    contributor_key: string | null;
+    /**
+     * Contributor Label
+     */
+    contributor_label: string | null;
+    /**
+     * Policy Rule Id
+     */
+    policy_rule_id: number | null;
+};
+
+/**
+ * RiskResponse
+ */
+export type RiskResponse = {
+    data: RiskSnapshotData | null;
+    /**
+     * As Of
+     */
+    as_of: string | null;
+    /**
+     * Calculated At
+     */
+    calculated_at: string;
+    coverage: RiskCoverageSchema | null;
+    /**
+     * Warnings
+     */
+    warnings: Array<string>;
+    /**
+     * Methodology Version
+     */
+    methodology_version?: 'historical-risk-v1';
+};
+
+/**
+ * RiskSnapshotData
+ */
+export type RiskSnapshotData = {
+    /**
+     * Snapshot Id
+     */
+    snapshot_id: number;
+    /**
+     * Portfolio Revision
+     */
+    portfolio_revision: number;
+    /**
+     * Is Current
+     */
+    is_current: boolean;
+    /**
+     * Stale Reasons
+     */
+    stale_reasons: Array<string>;
+    analysis: RiskAnalysisSchema;
+    evaluation?: PolicyEvaluationSchema | null;
+};
+
+/**
+ * RiskState
+ */
+export type RiskState = 'unknown' | 'within' | 'watch' | 'breached';
+
+/**
+ * ScenarioComparisonCoverage
+ */
+export type ScenarioComparisonCoverage = {
+    before: RiskCoverageSchema;
+    after: RiskCoverageSchema;
+};
+
+/**
+ * ScenarioComparisonData
+ */
+export type ScenarioComparisonData = {
+    /**
+     * Scenario Id
+     */
+    scenario_id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Base Portfolio Revision
+     */
+    base_portfolio_revision: number;
+    /**
+     * Candidate Instrument Id
+     */
+    candidate_instrument_id: number | null;
+    /**
+     * Policy Revision
+     */
+    policy_revision: number;
+    /**
+     * Operation Count
+     */
+    operation_count: number;
+    /**
+     * Operations
+     */
+    operations: Array<ScenarioOperationSchema>;
+    comparison_window: ComparisonWindowSchema;
+    before: ScenarioSideSchema;
+    after: ScenarioSideSchema;
+    /**
+     * Stress Assumptions
+     */
+    stress_assumptions: Array<StressAssumptionSchema>;
+    /**
+     * Total Estimated Cost
+     */
+    total_estimated_cost: string;
+    summary: ScenarioJudgmentSchema;
+    /**
+     * Warnings
+     */
+    warnings: Array<string>;
+    /**
+     * Methodology Version
+     */
+    methodology_version: 'scenario-comparison-v1';
+    /**
+     * Comparison Id
+     */
+    comparison_id: number;
+};
+
+/**
+ * ScenarioComparisonResponse
+ */
+export type ScenarioComparisonResponse = {
+    data: ScenarioComparisonData;
+    /**
+     * As Of
+     */
+    as_of: string | null;
+    /**
+     * Calculated At
+     */
+    calculated_at: string;
+    coverage: ScenarioComparisonCoverage;
+    /**
+     * Warnings
+     */
+    warnings: Array<string>;
+    /**
+     * Methodology Version
+     */
+    methodology_version?: 'scenario-comparison-v1';
+};
+
+/**
+ * ScenarioJudgmentSchema
+ */
+export type ScenarioJudgmentSchema = {
+    /**
+     * Confidence
+     */
+    confidence: 'low' | 'medium' | 'high';
+    /**
+     * Improvements
+     */
+    improvements: Array<string>;
+    /**
+     * Worsenings
+     */
+    worsenings: Array<string>;
+    /**
+     * Objections
+     */
+    objections: Array<string>;
+};
+
+/**
+ * ScenarioListCoverage
+ */
+export type ScenarioListCoverage = {
+    /**
+     * Scenario Count
+     */
+    scenario_count: number;
+};
+
+/**
+ * ScenarioListData
+ */
+export type ScenarioListData = {
+    /**
+     * Items
+     */
+    items: Array<ScenarioSummarySchema>;
+};
+
+/**
+ * ScenarioListResponse
+ */
+export type ScenarioListResponse = {
+    data: ScenarioListData;
+    /**
+     * As Of
+     */
+    as_of?: string | null;
+    /**
+     * Calculated At
+     */
+    calculated_at: string;
+    coverage: ScenarioListCoverage;
+    /**
+     * Warnings
+     */
+    warnings: Array<string>;
+    /**
+     * Methodology Version
+     */
+    methodology_version?: 'scenario-comparison-v1';
+};
+
+/**
+ * ScenarioOperationSchema
+ */
+export type ScenarioOperationSchema = {
+    /**
+     * Sequence
+     */
+    sequence: number;
+    operation_type: ScenarioOperationType;
+    /**
+     * Instrument Id
+     */
+    instrument_id: number | null;
+    /**
+     * Amount
+     */
+    amount: string | null;
+    /**
+     * Target Weight
+     */
+    target_weight: string | null;
+    /**
+     * Estimated Cost
+     */
+    estimated_cost: string;
+};
+
+/**
+ * ScenarioOperationType
+ */
+export type ScenarioOperationType = 'no_action' | 'buy' | 'sell' | 'set_amount' | 'set_target_weight';
+
+/**
+ * ScenarioPolicySchema
+ */
+export type ScenarioPolicySchema = {
+    state: RiskState;
+    /**
+     * Findings
+     */
+    findings: Array<PolicyFindingSchema>;
+    /**
+     * Methodology Version
+     */
+    methodology_version: string;
+};
+
+/**
+ * ScenarioSideSchema
+ */
+export type ScenarioSideSchema = {
+    analysis: RiskAnalysisSchema;
+    policy: ScenarioPolicySchema;
+    /**
+     * Stressed Value
+     */
+    stressed_value: string | null;
+};
+
+/**
+ * ScenarioSummarySchema
+ */
+export type ScenarioSummarySchema = {
+    /**
+     * Scenario Id
+     */
+    scenario_id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Base Portfolio Revision
+     */
+    base_portfolio_revision: number;
+    /**
+     * Candidate Instrument Id
+     */
+    candidate_instrument_id: number | null;
+    /**
+     * Operation Count
+     */
+    operation_count: number;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * StressAssumptionInput
+ */
+export type StressAssumptionInput = {
+    asset_class: AssetClass;
+    /**
+     * Shock
+     */
+    shock: number | string;
+};
+
+/**
+ * StressAssumptionSchema
+ */
+export type StressAssumptionSchema = {
+    asset_class: AssetClass;
+    /**
+     * Shock
+     */
+    shock: string;
+};
+
+/**
+ * UpdateWatchlistItemRequest
+ */
+export type UpdateWatchlistItemRequest = {
+    /**
+     * Reason
+     */
+    reason?: string | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string>;
+};
+
+/**
+ * UserDataExportResponse
+ */
+export type UserDataExportResponse = {
+    /**
+     * Schema Version
+     */
+    schema_version?: 'tickeye-user-data-v1';
+    /**
+     * Exported At
+     */
+    exported_at: string;
+    /**
+     * Data
+     */
+    data: {
+        [key: string]: unknown;
+    };
+    /**
+     * Excluded Data
+     */
+    excluded_data: Array<string>;
+    /**
+     * Warnings
+     */
+    warnings: Array<string>;
+};
+
+/**
+ * ValidationError
+ */
+export type ValidationError = {
+    /**
+     * Location
+     */
+    loc: Array<string | number>;
+    /**
+     * Message
+     */
+    msg: string;
+    /**
+     * Error Type
+     */
+    type: string;
+    /**
+     * Input
+     */
+    input?: unknown;
+    /**
+     * Context
+     */
+    ctx?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * ValidationIssueSchema
+ */
+export type ValidationIssueSchema = {
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Field
+     */
+    field: string | null;
+    /**
+     * Row
+     */
+    row: number | null;
+};
+
+/**
+ * ValuationSource
+ */
+export type ValuationSource = 'market_data' | 'manual_value' | 'cash_balance' | 'zero_quantity' | 'unavailable';
+
+/**
+ * WatchlistCoverage
+ */
+export type WatchlistCoverage = {
+    /**
+     * Watchlist Count
+     */
+    watchlist_count: number;
+    /**
+     * Item Count
+     */
+    item_count: number;
+    /**
+     * Held Item Count
+     */
+    held_item_count: number;
+};
+
+/**
+ * WatchlistData
+ */
+export type WatchlistData = {
+    /**
+     * Items
+     */
+    items: Array<WatchlistSchema>;
+};
+
+/**
+ * WatchlistItemInput
+ */
+export type WatchlistItemInput = {
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Name
+     */
+    name: string;
+    instrument_type: InstrumentType;
+    /**
+     * Market
+     */
+    market: string;
+    /**
+     * Currency
+     */
+    currency?: string;
+    asset_class: AssetClass;
+    /**
+     * Region
+     */
+    region: string;
+    /**
+     * Reason
+     */
+    reason?: string | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string>;
+};
+
+/**
+ * WatchlistItemSchema
+ */
+export type WatchlistItemSchema = {
+    /**
+     * Item Id
+     */
+    item_id: number;
+    /**
+     * Instrument Id
+     */
+    instrument_id: number;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Name
+     */
+    name: string;
+    instrument_type: InstrumentType;
+    /**
+     * Market
+     */
+    market: string;
+    /**
+     * Currency
+     */
+    currency: string;
+    asset_class: AssetClass;
+    /**
+     * Region
+     */
+    region: string;
+    /**
+     * Reason
+     */
+    reason: string | null;
+    /**
+     * Tags
+     */
+    tags: Array<string>;
+    /**
+     * Held
+     */
+    held: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * WatchlistResponse
+ */
+export type WatchlistResponse = {
+    data: WatchlistData;
+    /**
+     * As Of
+     */
+    as_of?: string | null;
+    /**
+     * Calculated At
+     */
+    calculated_at: string;
+    coverage: WatchlistCoverage;
+    /**
+     * Warnings
+     */
+    warnings: Array<string>;
+    /**
+     * Methodology Version
+     */
+    methodology_version?: 'user-watchlists-v1';
+};
+
+/**
+ * WatchlistSchema
+ */
+export type WatchlistSchema = {
+    /**
+     * Watchlist Id
+     */
+    watchlist_id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Items
+     */
+    items: Array<WatchlistItemSchema>;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+export type ExportUserDataApiV1ExportGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/export';
+};
+
+export type ExportUserDataApiV1ExportGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: UserDataExportResponse;
+};
+
+export type ExportUserDataApiV1ExportGetResponse = ExportUserDataApiV1ExportGetResponses[keyof ExportUserDataApiV1ExportGetResponses];
+
 export type GetHealthApiV1HealthGetData = {
     body?: never;
     path?: never;
@@ -52,3 +1817,471 @@ export type GetHealthApiV1HealthGetResponses = {
 };
 
 export type GetHealthApiV1HealthGetResponse = GetHealthApiV1HealthGetResponses[keyof GetHealthApiV1HealthGetResponses];
+
+export type GetDataQualityApiV1DataQualityGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/data-quality';
+};
+
+export type GetDataQualityApiV1DataQualityGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: DataQualityResponse;
+};
+
+export type GetDataQualityApiV1DataQualityGetResponse = GetDataQualityApiV1DataQualityGetResponses[keyof GetDataQualityApiV1DataQualityGetResponses];
+
+export type RefreshMarketDataApiV1MarketDataRefreshPostData = {
+    body: MarketRefreshRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/market-data/refresh';
+};
+
+export type RefreshMarketDataApiV1MarketDataRefreshPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RefreshMarketDataApiV1MarketDataRefreshPostError = RefreshMarketDataApiV1MarketDataRefreshPostErrors[keyof RefreshMarketDataApiV1MarketDataRefreshPostErrors];
+
+export type RefreshMarketDataApiV1MarketDataRefreshPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: MarketRefreshResponse;
+};
+
+export type RefreshMarketDataApiV1MarketDataRefreshPostResponse = RefreshMarketDataApiV1MarketDataRefreshPostResponses[keyof RefreshMarketDataApiV1MarketDataRefreshPostResponses];
+
+export type GetPoliciesApiV1PoliciesGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/policies';
+};
+
+export type GetPoliciesApiV1PoliciesGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: PolicyResponse;
+};
+
+export type GetPoliciesApiV1PoliciesGetResponse = GetPoliciesApiV1PoliciesGetResponses[keyof GetPoliciesApiV1PoliciesGetResponses];
+
+export type ReplacePoliciesApiV1PoliciesPutData = {
+    body: ReplacePoliciesRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/policies';
+};
+
+export type ReplacePoliciesApiV1PoliciesPutErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ReplacePoliciesApiV1PoliciesPutError = ReplacePoliciesApiV1PoliciesPutErrors[keyof ReplacePoliciesApiV1PoliciesPutErrors];
+
+export type ReplacePoliciesApiV1PoliciesPutResponses = {
+    /**
+     * Successful Response
+     */
+    200: PolicyResponse;
+};
+
+export type ReplacePoliciesApiV1PoliciesPutResponse = ReplacePoliciesApiV1PoliciesPutResponses[keyof ReplacePoliciesApiV1PoliciesPutResponses];
+
+export type GetEventsApiV1EventsGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/events';
+};
+
+export type GetEventsApiV1EventsGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: EventResponse;
+};
+
+export type GetEventsApiV1EventsGetResponse = GetEventsApiV1EventsGetResponses[keyof GetEventsApiV1EventsGetResponses];
+
+export type GetPortfolioApiV1PortfolioGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/portfolio';
+};
+
+export type GetPortfolioApiV1PortfolioGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: PortfolioResponse;
+};
+
+export type GetPortfolioApiV1PortfolioGetResponse = GetPortfolioApiV1PortfolioGetResponses[keyof GetPortfolioApiV1PortfolioGetResponses];
+
+export type ReplacePositionsApiV1PortfolioPositionsPutData = {
+    body: ReplacePositionsRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/portfolio/positions';
+};
+
+export type ReplacePositionsApiV1PortfolioPositionsPutErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ReplacePositionsApiV1PortfolioPositionsPutError = ReplacePositionsApiV1PortfolioPositionsPutErrors[keyof ReplacePositionsApiV1PortfolioPositionsPutErrors];
+
+export type ReplacePositionsApiV1PortfolioPositionsPutResponses = {
+    /**
+     * Successful Response
+     */
+    200: PortfolioResponse;
+};
+
+export type ReplacePositionsApiV1PortfolioPositionsPutResponse = ReplacePositionsApiV1PortfolioPositionsPutResponses[keyof ReplacePositionsApiV1PortfolioPositionsPutResponses];
+
+export type ImportPortfolioApiV1PortfolioImportPostData = {
+    body: PortfolioImportRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/portfolio/import';
+};
+
+export type ImportPortfolioApiV1PortfolioImportPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ImportPortfolioApiV1PortfolioImportPostError = ImportPortfolioApiV1PortfolioImportPostErrors[keyof ImportPortfolioApiV1PortfolioImportPostErrors];
+
+export type ImportPortfolioApiV1PortfolioImportPostResponses = {
+    /**
+     * Response Import Portfolio Api V1 Portfolio Import Post
+     *
+     * Successful Response
+     */
+    200: ImportPreviewResponse | ImportConfirmedResponse;
+};
+
+export type ImportPortfolioApiV1PortfolioImportPostResponse = ImportPortfolioApiV1PortfolioImportPostResponses[keyof ImportPortfolioApiV1PortfolioImportPostResponses];
+
+export type GetCurrentRiskApiV1RiskCurrentGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/risk/current';
+};
+
+export type GetCurrentRiskApiV1RiskCurrentGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: RiskResponse;
+};
+
+export type GetCurrentRiskApiV1RiskCurrentGetResponse = GetCurrentRiskApiV1RiskCurrentGetResponses[keyof GetCurrentRiskApiV1RiskCurrentGetResponses];
+
+export type RecalculateRiskApiV1RiskRecalculatePostData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/risk/recalculate';
+};
+
+export type RecalculateRiskApiV1RiskRecalculatePostResponses = {
+    /**
+     * Successful Response
+     */
+    200: RiskResponse;
+};
+
+export type RecalculateRiskApiV1RiskRecalculatePostResponse = RecalculateRiskApiV1RiskRecalculatePostResponses[keyof RecalculateRiskApiV1RiskRecalculatePostResponses];
+
+export type ListScenariosApiV1ScenariosGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/scenarios';
+};
+
+export type ListScenariosApiV1ScenariosGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ScenarioListResponse;
+};
+
+export type ListScenariosApiV1ScenariosGetResponse = ListScenariosApiV1ScenariosGetResponses[keyof ListScenariosApiV1ScenariosGetResponses];
+
+export type CreateScenarioApiV1ScenariosPostData = {
+    body: CreateScenarioRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/scenarios';
+};
+
+export type CreateScenarioApiV1ScenariosPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateScenarioApiV1ScenariosPostError = CreateScenarioApiV1ScenariosPostErrors[keyof CreateScenarioApiV1ScenariosPostErrors];
+
+export type CreateScenarioApiV1ScenariosPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: ScenarioComparisonResponse;
+};
+
+export type CreateScenarioApiV1ScenariosPostResponse = CreateScenarioApiV1ScenariosPostResponses[keyof CreateScenarioApiV1ScenariosPostResponses];
+
+export type AddScenarioOperationApiV1ScenariosScenarioIdOperationsPostData = {
+    body: AddScenarioOperationRequest;
+    path: {
+        /**
+         * Scenario Id
+         */
+        scenario_id: number;
+    };
+    query?: never;
+    url: '/api/v1/scenarios/{scenario_id}/operations';
+};
+
+export type AddScenarioOperationApiV1ScenariosScenarioIdOperationsPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AddScenarioOperationApiV1ScenariosScenarioIdOperationsPostError = AddScenarioOperationApiV1ScenariosScenarioIdOperationsPostErrors[keyof AddScenarioOperationApiV1ScenariosScenarioIdOperationsPostErrors];
+
+export type AddScenarioOperationApiV1ScenariosScenarioIdOperationsPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: ScenarioComparisonResponse;
+};
+
+export type AddScenarioOperationApiV1ScenariosScenarioIdOperationsPostResponse = AddScenarioOperationApiV1ScenariosScenarioIdOperationsPostResponses[keyof AddScenarioOperationApiV1ScenariosScenarioIdOperationsPostResponses];
+
+export type GetScenarioComparisonApiV1ScenariosScenarioIdComparisonGetData = {
+    body?: never;
+    path: {
+        /**
+         * Scenario Id
+         */
+        scenario_id: number;
+    };
+    query?: never;
+    url: '/api/v1/scenarios/{scenario_id}/comparison';
+};
+
+export type GetScenarioComparisonApiV1ScenariosScenarioIdComparisonGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetScenarioComparisonApiV1ScenariosScenarioIdComparisonGetError = GetScenarioComparisonApiV1ScenariosScenarioIdComparisonGetErrors[keyof GetScenarioComparisonApiV1ScenariosScenarioIdComparisonGetErrors];
+
+export type GetScenarioComparisonApiV1ScenariosScenarioIdComparisonGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ScenarioComparisonResponse;
+};
+
+export type GetScenarioComparisonApiV1ScenariosScenarioIdComparisonGetResponse = GetScenarioComparisonApiV1ScenariosScenarioIdComparisonGetResponses[keyof GetScenarioComparisonApiV1ScenariosScenarioIdComparisonGetResponses];
+
+export type ListWatchlistsApiV1WatchlistsGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/watchlists';
+};
+
+export type ListWatchlistsApiV1WatchlistsGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: WatchlistResponse;
+};
+
+export type ListWatchlistsApiV1WatchlistsGetResponse = ListWatchlistsApiV1WatchlistsGetResponses[keyof ListWatchlistsApiV1WatchlistsGetResponses];
+
+export type CreateWatchlistApiV1WatchlistsPostData = {
+    body: CreateWatchlistRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/watchlists';
+};
+
+export type CreateWatchlistApiV1WatchlistsPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateWatchlistApiV1WatchlistsPostError = CreateWatchlistApiV1WatchlistsPostErrors[keyof CreateWatchlistApiV1WatchlistsPostErrors];
+
+export type CreateWatchlistApiV1WatchlistsPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: WatchlistResponse;
+};
+
+export type CreateWatchlistApiV1WatchlistsPostResponse = CreateWatchlistApiV1WatchlistsPostResponses[keyof CreateWatchlistApiV1WatchlistsPostResponses];
+
+export type DeleteWatchlistApiV1WatchlistsWatchlistIdDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Watchlist Id
+         */
+        watchlist_id: number;
+    };
+    query?: never;
+    url: '/api/v1/watchlists/{watchlist_id}';
+};
+
+export type DeleteWatchlistApiV1WatchlistsWatchlistIdDeleteErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteWatchlistApiV1WatchlistsWatchlistIdDeleteError = DeleteWatchlistApiV1WatchlistsWatchlistIdDeleteErrors[keyof DeleteWatchlistApiV1WatchlistsWatchlistIdDeleteErrors];
+
+export type DeleteWatchlistApiV1WatchlistsWatchlistIdDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    200: WatchlistResponse;
+};
+
+export type DeleteWatchlistApiV1WatchlistsWatchlistIdDeleteResponse = DeleteWatchlistApiV1WatchlistsWatchlistIdDeleteResponses[keyof DeleteWatchlistApiV1WatchlistsWatchlistIdDeleteResponses];
+
+export type AddWatchlistItemApiV1WatchlistsWatchlistIdItemsPostData = {
+    body: WatchlistItemInput;
+    path: {
+        /**
+         * Watchlist Id
+         */
+        watchlist_id: number;
+    };
+    query?: never;
+    url: '/api/v1/watchlists/{watchlist_id}/items';
+};
+
+export type AddWatchlistItemApiV1WatchlistsWatchlistIdItemsPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AddWatchlistItemApiV1WatchlistsWatchlistIdItemsPostError = AddWatchlistItemApiV1WatchlistsWatchlistIdItemsPostErrors[keyof AddWatchlistItemApiV1WatchlistsWatchlistIdItemsPostErrors];
+
+export type AddWatchlistItemApiV1WatchlistsWatchlistIdItemsPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: WatchlistResponse;
+};
+
+export type AddWatchlistItemApiV1WatchlistsWatchlistIdItemsPostResponse = AddWatchlistItemApiV1WatchlistsWatchlistIdItemsPostResponses[keyof AddWatchlistItemApiV1WatchlistsWatchlistIdItemsPostResponses];
+
+export type RemoveWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Watchlist Id
+         */
+        watchlist_id: number;
+        /**
+         * Item Id
+         */
+        item_id: number;
+    };
+    query?: never;
+    url: '/api/v1/watchlists/{watchlist_id}/items/{item_id}';
+};
+
+export type RemoveWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdDeleteErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RemoveWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdDeleteError = RemoveWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdDeleteErrors[keyof RemoveWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdDeleteErrors];
+
+export type RemoveWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    200: WatchlistResponse;
+};
+
+export type RemoveWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdDeleteResponse = RemoveWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdDeleteResponses[keyof RemoveWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdDeleteResponses];
+
+export type UpdateWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdPutData = {
+    body: UpdateWatchlistItemRequest;
+    path: {
+        /**
+         * Watchlist Id
+         */
+        watchlist_id: number;
+        /**
+         * Item Id
+         */
+        item_id: number;
+    };
+    query?: never;
+    url: '/api/v1/watchlists/{watchlist_id}/items/{item_id}';
+};
+
+export type UpdateWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdPutErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdPutError = UpdateWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdPutErrors[keyof UpdateWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdPutErrors];
+
+export type UpdateWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdPutResponses = {
+    /**
+     * Successful Response
+     */
+    200: WatchlistResponse;
+};
+
+export type UpdateWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdPutResponse = UpdateWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdPutResponses[keyof UpdateWatchlistItemApiV1WatchlistsWatchlistIdItemsItemIdPutResponses];

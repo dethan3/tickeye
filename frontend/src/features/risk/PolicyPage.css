@@ -1,0 +1,32 @@
+.policy-main { flex: 1; padding: 70px 0 100px; }
+.policy-heading { display: flex; align-items: end; justify-content: space-between; gap: 28px; margin-bottom: 36px; }
+.policy-heading h1 { margin: 10px 0 12px; font-size: clamp(44px, 7vw, 72px); }
+.policy-heading p:last-child { max-width: 680px; margin: 0; color: var(--muted); line-height: 1.7; }
+.policy-heading > span { padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 13px; }
+.policy-panel { margin-top: 20px; padding: 28px; border: 1px solid var(--line); border-radius: 18px; background: rgba(251, 252, 249, 0.82); }
+.policy-panel h2 { margin: 5px 0 20px; font-size: 24px; }
+.policy-empty { padding: 30px; border: 1px dashed #cbd4cb; border-radius: 12px; color: var(--muted); text-align: center; }
+.policy-rule-list { display: grid; gap: 10px; }
+.policy-rule-list article { display: grid; grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(110px, .6fr)) auto; gap: 18px; align-items: center; padding: 15px 16px; border: 1px solid #e2e7e0; border-radius: 12px; background: #f8faf6; }
+.policy-rule-list article > div { display: flex; flex-direction: column; gap: 4px; }
+.policy-rule-list article span { color: var(--muted); font-size: 12px; }
+.policy-rule-list button { border: 0; color: var(--red); background: transparent; cursor: pointer; }
+.policy-form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.policy-form label { display: flex; flex-direction: column; gap: 7px; color: #4e5a52; font-size: 12px; font-weight: 650; }
+.policy-form input, .policy-form select { min-height: 42px; padding: 9px 11px; border: 1px solid #cbd3cb; border-radius: 9px; background: #fff; }
+.policy-form-actions { grid-column: 1 / -1; }
+.policy-error { color: var(--red); }
+.event-list { display: grid; gap: 14px; }
+.event-card { padding: 22px 24px; border: 1px solid var(--line); border-left: 5px solid #b18a37; border-radius: 14px; background: rgba(251, 252, 249, .86); }
+.event-card--breached { border-left-color: var(--red); }
+.event-card--within { border-left-color: var(--green); }
+.event-card > div { display: flex; justify-content: space-between; gap: 20px; color: var(--muted); font-size: 12px; }
+.event-card h2 { margin: 12px 0 7px; font-size: 20px; }
+.event-card p { margin: 0 0 12px; color: #4f5b53; }
+.event-card small { color: var(--muted); }
+@media (max-width: 780px) {
+  .policy-main { padding: 50px 0 72px; }
+  .policy-heading { align-items: start; flex-direction: column; }
+  .policy-form { grid-template-columns: 1fr; }
+  .policy-rule-list article { grid-template-columns: 1fr 1fr; }
+}

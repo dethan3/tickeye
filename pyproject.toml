@@ -10,8 +10,11 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
 dependencies = [
+    "akshare>=1.18.94,<2",
     "alembic>=1.16,<2",
     "fastapi>=0.116,<1",
+    "numpy>=2.0,<3",
+    "pandas>=2.3,<4",
     "pydantic-settings>=2.10,<3",
     "sqlalchemy>=2.0,<3",
     "uvicorn[standard]>=0.35,<1",
@@ -21,6 +24,7 @@ dependencies = [
 dev = [
     "httpx2>=2,<3",
     "mypy>=1.17,<2",
+    "pandas-stubs>=2.3,<4",
     "pytest>=8.4,<10",
     "pytest-cov>=6.2,<8",
     "ruff>=0.12,<1",
@@ -29,6 +33,7 @@ dev = [
 [project.scripts]
 tickeye = "tickeye.cli:main"
 tickeye-export-openapi = "tickeye.web.openapi:main"
+tickeye-migrate-v1 = "tickeye.legacy_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

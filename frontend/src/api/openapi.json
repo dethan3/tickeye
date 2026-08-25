@@ -5,6 +5,27 @@
     "version": "2.0.0.dev0"
   },
   "paths": {
+    "/api/v1/export": {
+      "get": {
+        "tags": [
+          "local-data"
+        ],
+        "summary": "Export User Data",
+        "operationId": "export_user_data_api_v1_export_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDataExportResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/health": {
       "get": {
         "tags": [
@@ -26,10 +47,847 @@
           }
         }
       }
+    },
+    "/api/v1/data-quality": {
+      "get": {
+        "tags": [
+          "market-data"
+        ],
+        "summary": "Get Data Quality",
+        "operationId": "get_data_quality_api_v1_data_quality_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataQualityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/market-data/refresh": {
+      "post": {
+        "tags": [
+          "market-data"
+        ],
+        "summary": "Refresh Market Data",
+        "operationId": "refresh_market_data_api_v1_market_data_refresh_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketRefreshRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketRefreshResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/policies": {
+      "get": {
+        "tags": [
+          "policy"
+        ],
+        "summary": "Get Policies",
+        "operationId": "get_policies_api_v1_policies_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "policy"
+        ],
+        "summary": "Replace Policies",
+        "operationId": "replace_policies_api_v1_policies_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplacePoliciesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/events": {
+      "get": {
+        "tags": [
+          "policy"
+        ],
+        "summary": "Get Events",
+        "operationId": "get_events_api_v1_events_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/portfolio": {
+      "get": {
+        "tags": [
+          "portfolio"
+        ],
+        "summary": "Get Portfolio",
+        "operationId": "get_portfolio_api_v1_portfolio_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/portfolio/positions": {
+      "put": {
+        "tags": [
+          "portfolio"
+        ],
+        "summary": "Replace Positions",
+        "operationId": "replace_positions_api_v1_portfolio_positions_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplacePositionsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/portfolio/import": {
+      "post": {
+        "tags": [
+          "portfolio"
+        ],
+        "summary": "Import Portfolio",
+        "operationId": "import_portfolio_api_v1_portfolio_import_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortfolioImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ImportPreviewResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ImportConfirmedResponse"
+                    }
+                  ],
+                  "title": "Response Import Portfolio Api V1 Portfolio Import Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/risk/current": {
+      "get": {
+        "tags": [
+          "risk"
+        ],
+        "summary": "Get Current Risk",
+        "operationId": "get_current_risk_api_v1_risk_current_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/risk/recalculate": {
+      "post": {
+        "tags": [
+          "risk"
+        ],
+        "summary": "Recalculate Risk",
+        "operationId": "recalculate_risk_api_v1_risk_recalculate_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios": {
+      "get": {
+        "tags": [
+          "scenario"
+        ],
+        "summary": "List Scenarios",
+        "operationId": "list_scenarios_api_v1_scenarios_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "scenario"
+        ],
+        "summary": "Create Scenario",
+        "operationId": "create_scenario_api_v1_scenarios_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateScenarioRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioComparisonResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/operations": {
+      "post": {
+        "tags": [
+          "scenario"
+        ],
+        "summary": "Add Scenario Operation",
+        "operationId": "add_scenario_operation_api_v1_scenarios__scenario_id__operations_post",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddScenarioOperationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioComparisonResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/comparison": {
+      "get": {
+        "tags": [
+          "scenario"
+        ],
+        "summary": "Get Scenario Comparison",
+        "operationId": "get_scenario_comparison_api_v1_scenarios__scenario_id__comparison_get",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioComparisonResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/watchlists": {
+      "get": {
+        "tags": [
+          "watchlist"
+        ],
+        "summary": "List Watchlists",
+        "operationId": "list_watchlists_api_v1_watchlists_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchlistResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "watchlist"
+        ],
+        "summary": "Create Watchlist",
+        "operationId": "create_watchlist_api_v1_watchlists_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWatchlistRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchlistResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/watchlists/{watchlist_id}": {
+      "delete": {
+        "tags": [
+          "watchlist"
+        ],
+        "summary": "Delete Watchlist",
+        "operationId": "delete_watchlist_api_v1_watchlists__watchlist_id__delete",
+        "parameters": [
+          {
+            "name": "watchlist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Watchlist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchlistResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/watchlists/{watchlist_id}/items": {
+      "post": {
+        "tags": [
+          "watchlist"
+        ],
+        "summary": "Add Watchlist Item",
+        "operationId": "add_watchlist_item_api_v1_watchlists__watchlist_id__items_post",
+        "parameters": [
+          {
+            "name": "watchlist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Watchlist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WatchlistItemInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchlistResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/watchlists/{watchlist_id}/items/{item_id}": {
+      "put": {
+        "tags": [
+          "watchlist"
+        ],
+        "summary": "Update Watchlist Item",
+        "operationId": "update_watchlist_item_api_v1_watchlists__watchlist_id__items__item_id__put",
+        "parameters": [
+          {
+            "name": "watchlist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Watchlist Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWatchlistItemRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchlistResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "watchlist"
+        ],
+        "summary": "Remove Watchlist Item",
+        "operationId": "remove_watchlist_item_api_v1_watchlists__watchlist_id__items__item_id__delete",
+        "parameters": [
+          {
+            "name": "watchlist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Watchlist Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchlistResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AddScenarioOperationRequest": {
+        "properties": {
+          "operation_type": {
+            "$ref": "#/components/schemas/ScenarioOperationType"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Id"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "target_weight": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,8}0*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Weight"
+          },
+          "estimated_cost": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$"
+              }
+            ],
+            "title": "Estimated Cost",
+            "default": "0"
+          }
+        },
+        "type": "object",
+        "required": [
+          "operation_type"
+        ],
+        "title": "AddScenarioOperationRequest"
+      },
+      "AssetClass": {
+        "type": "string",
+        "enum": [
+          "equity",
+          "fixed_income",
+          "mixed",
+          "cash",
+          "commodity",
+          "other"
+        ],
+        "title": "AssetClass",
+        "description": "Broad exposure groups used by later portfolio risk calculations."
+      },
+      "ComparisonWindowSchema": {
+        "properties": {
+          "start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "observations": {
+            "type": "integer",
+            "title": "Observations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "observations"
+        ],
+        "title": "ComparisonWindowSchema"
+      },
       "ComponentHealth": {
         "properties": {
           "status": {
@@ -47,6 +905,457 @@
         ],
         "title": "ComponentHealth",
         "description": "Status of one dependency checked by the API."
+      },
+      "CorrelationEntrySchema": {
+        "properties": {
+          "left_code": {
+            "type": "string",
+            "title": "Left Code"
+          },
+          "right_code": {
+            "type": "string",
+            "title": "Right Code"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "left_code",
+          "right_code",
+          "value"
+        ],
+        "title": "CorrelationEntrySchema"
+      },
+      "CreateScenarioRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "candidate_instrument_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Instrument Id"
+          },
+          "stress_assumptions": {
+            "items": {
+              "$ref": "#/components/schemas/StressAssumptionInput"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Stress Assumptions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "CreateScenarioRequest"
+      },
+      "CreateWatchlistRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "CreateWatchlistRequest"
+      },
+      "DataQualityCoverage": {
+        "properties": {
+          "tracked_count": {
+            "type": "integer",
+            "title": "Tracked Count"
+          },
+          "available_count": {
+            "type": "integer",
+            "title": "Available Count"
+          },
+          "problem_count": {
+            "type": "integer",
+            "title": "Problem Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tracked_count",
+          "available_count",
+          "problem_count"
+        ],
+        "title": "DataQualityCoverage"
+      },
+      "DataQualityData": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DataQualityItemSchema"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "DataQualityData"
+      },
+      "DataQualityItemSchema": {
+        "properties": {
+          "instrument_id": {
+            "type": "integer",
+            "title": "Instrument Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "instrument_type": {
+            "$ref": "#/components/schemas/InstrumentType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DataQualityStatus"
+          },
+          "last_observation_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Observation Date"
+          },
+          "latest_value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Value"
+          },
+          "value_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MarketValueType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "sample_count": {
+            "type": "integer",
+            "title": "Sample Count"
+          },
+          "freshness_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Freshness Days"
+          },
+          "freshness_limit_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Freshness Limit Days"
+          },
+          "rejected_rate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejected Rate"
+          },
+          "last_refresh_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Refresh At"
+          },
+          "last_refresh_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RefreshStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "failure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Code"
+          },
+          "failure_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Message"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "instrument_id",
+          "code",
+          "name",
+          "instrument_type",
+          "status",
+          "last_observation_date",
+          "latest_value",
+          "value_type",
+          "source",
+          "sample_count",
+          "freshness_days",
+          "freshness_limit_days",
+          "rejected_rate",
+          "last_refresh_at",
+          "last_refresh_status",
+          "failure_code",
+          "failure_message",
+          "limitations"
+        ],
+        "title": "DataQualityItemSchema"
+      },
+      "DataQualityResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/DataQualityData"
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "calculated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Calculated At"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/DataQualityCoverage"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "methodology_version": {
+            "type": "string",
+            "const": "data-quality-v1",
+            "title": "Methodology Version",
+            "default": "data-quality-v1"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "as_of",
+          "calculated_at",
+          "coverage",
+          "warnings"
+        ],
+        "title": "DataQualityResponse"
+      },
+      "DataQualityStatus": {
+        "type": "string",
+        "enum": [
+          "good",
+          "partial",
+          "stale",
+          "missing",
+          "refresh_failed",
+          "short_history",
+          "not_applicable"
+        ],
+        "title": "DataQualityStatus"
+      },
+      "EventData": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/InsightEventSchema"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "EventData"
+      },
+      "EventResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EventData"
+          },
+          "calculated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Calculated At"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "methodology_version": {
+            "type": "string",
+            "const": "insight-events-v1",
+            "title": "Methodology Version",
+            "default": "insight-events-v1"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "calculated_at",
+          "warnings"
+        ],
+        "title": "EventResponse"
+      },
+      "ExposureSchema": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value"
+          },
+          "weight": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Weight"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "value",
+          "weight"
+        ],
+        "title": "ExposureSchema"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
       },
       "HealthResponse": {
         "properties": {
@@ -79,6 +1388,2865 @@
         ],
         "title": "HealthResponse",
         "description": "Public readiness response consumed by the local frontend."
+      },
+      "HistoricalMetricsSchema": {
+        "properties": {
+          "aligned_observations": {
+            "type": "integer",
+            "title": "Aligned Observations"
+          },
+          "return_samples": {
+            "type": "integer",
+            "title": "Return Samples"
+          },
+          "window_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window Start"
+          },
+          "window_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window End"
+          },
+          "annualized_volatility": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annualized Volatility"
+          },
+          "downside_volatility": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Downside Volatility"
+          },
+          "max_drawdown": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Drawdown"
+          },
+          "current_drawdown": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Drawdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "aligned_observations",
+          "return_samples",
+          "window_start",
+          "window_end",
+          "annualized_volatility",
+          "downside_volatility",
+          "max_drawdown",
+          "current_drawdown"
+        ],
+        "title": "HistoricalMetricsSchema"
+      },
+      "ImportConfirmedResponse": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "const": "confirm",
+            "title": "Mode",
+            "default": "confirm"
+          },
+          "portfolio": {
+            "$ref": "#/components/schemas/PortfolioResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "portfolio"
+        ],
+        "title": "ImportConfirmedResponse"
+      },
+      "ImportPreviewData": {
+        "properties": {
+          "preview_token": {
+            "type": "string",
+            "title": "Preview Token"
+          },
+          "valid": {
+            "type": "boolean",
+            "title": "Valid"
+          },
+          "duplicate_import": {
+            "type": "boolean",
+            "title": "Duplicate Import"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/PositionInputSchema-Output"
+            },
+            "type": "array",
+            "title": "Positions"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationIssueSchema"
+            },
+            "type": "array",
+            "title": "Issues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "preview_token",
+          "valid",
+          "duplicate_import",
+          "positions",
+          "issues"
+        ],
+        "title": "ImportPreviewData"
+      },
+      "ImportPreviewResponse": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "const": "preview",
+            "title": "Mode",
+            "default": "preview"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ImportPreviewData"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ImportPreviewResponse"
+      },
+      "InsightEventSchema": {
+        "properties": {
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "finding_key": {
+            "type": "string",
+            "title": "Finding Key"
+          },
+          "from_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From State"
+          },
+          "to_state": {
+            "type": "string",
+            "title": "To State"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "finding": {
+            "$ref": "#/components/schemas/RiskFindingEventSchema"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "event_type",
+          "finding_key",
+          "from_state",
+          "to_state",
+          "severity",
+          "occurred_at",
+          "finding"
+        ],
+        "title": "InsightEventSchema"
+      },
+      "InstrumentType": {
+        "type": "string",
+        "enum": [
+          "fund",
+          "etf",
+          "qdii_fund",
+          "cash"
+        ],
+        "title": "InstrumentType",
+        "description": "Asset forms supported by the first local portfolio slice."
+      },
+      "MarketRefreshData": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/RefreshResultSchema"
+            },
+            "type": "array",
+            "title": "Results"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/DataQualityResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "results",
+          "quality"
+        ],
+        "title": "MarketRefreshData"
+      },
+      "MarketRefreshRequest": {
+        "properties": {
+          "instrument_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array",
+                "maxItems": 500,
+                "uniqueItems": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Ids"
+          }
+        },
+        "type": "object",
+        "title": "MarketRefreshRequest"
+      },
+      "MarketRefreshResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MarketRefreshData"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "MarketRefreshResponse"
+      },
+      "MarketValueType": {
+        "type": "string",
+        "enum": [
+          "cumulative_nav",
+          "unit_nav",
+          "adjusted_close",
+          "index_close"
+        ],
+        "title": "MarketValueType"
+      },
+      "PolicyData": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyRuleSchema"
+            },
+            "type": "array",
+            "title": "Rules"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision",
+          "rules"
+        ],
+        "title": "PolicyData"
+      },
+      "PolicyEvaluationSchema": {
+        "properties": {
+          "evaluation_id": {
+            "type": "integer",
+            "title": "Evaluation Id"
+          },
+          "policy_revision": {
+            "type": "integer",
+            "title": "Policy Revision"
+          },
+          "state": {
+            "$ref": "#/components/schemas/RiskState"
+          },
+          "calculated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Calculated At"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyFindingSchema"
+            },
+            "type": "array",
+            "title": "Findings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evaluation_id",
+          "policy_revision",
+          "state",
+          "calculated_at",
+          "findings"
+        ],
+        "title": "PolicyEvaluationSchema"
+      },
+      "PolicyFindingSchema": {
+        "properties": {
+          "finding_key": {
+            "type": "string",
+            "title": "Finding Key"
+          },
+          "dimension": {
+            "type": "string",
+            "title": "Dimension"
+          },
+          "state": {
+            "$ref": "#/components/schemas/RiskState"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "current_value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Value"
+          },
+          "boundary_low": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boundary Low"
+          },
+          "boundary_high": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boundary High"
+          },
+          "contributor_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contributor Key"
+          },
+          "contributor_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contributor Label"
+          },
+          "policy_rule_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Rule Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "finding_key",
+          "dimension",
+          "state",
+          "title",
+          "message",
+          "current_value",
+          "boundary_low",
+          "boundary_high",
+          "contributor_key",
+          "contributor_label",
+          "policy_rule_id"
+        ],
+        "title": "PolicyFindingSchema"
+      },
+      "PolicyResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PolicyData"
+          },
+          "calculated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Calculated At"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "methodology_version": {
+            "type": "string",
+            "const": "policy-rules-v1",
+            "title": "Methodology Version",
+            "default": "policy-rules-v1"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "calculated_at",
+          "warnings"
+        ],
+        "title": "PolicyResponse"
+      },
+      "PolicyRuleInput": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "rule_type": {
+            "$ref": "#/components/schemas/PolicyRuleType"
+          },
+          "subject_key": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Subject Key"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,8}0*$"
+              }
+            ],
+            "title": "Threshold"
+          },
+          "tolerance": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,8}0*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tolerance"
+          },
+          "warning_ratio": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMaximum": 1.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,8}0*$"
+              }
+            ],
+            "title": "Warning Ratio"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule_type",
+          "subject_key",
+          "threshold",
+          "warning_ratio"
+        ],
+        "title": "PolicyRuleInput"
+      },
+      "PolicyRuleSchema": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "rule_type": {
+            "$ref": "#/components/schemas/PolicyRuleType"
+          },
+          "subject_key": {
+            "type": "string",
+            "title": "Subject Key"
+          },
+          "subject_label": {
+            "type": "string",
+            "title": "Subject Label"
+          },
+          "threshold": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Threshold"
+          },
+          "tolerance": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tolerance"
+          },
+          "warning_ratio": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Warning Ratio"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "rule_type",
+          "subject_key",
+          "subject_label",
+          "threshold",
+          "tolerance",
+          "warning_ratio",
+          "enabled"
+        ],
+        "title": "PolicyRuleSchema"
+      },
+      "PolicyRuleType": {
+        "type": "string",
+        "enum": [
+          "instrument_max_weight",
+          "asset_class_max_weight",
+          "cash_min_weight",
+          "asset_class_target_weight"
+        ],
+        "title": "PolicyRuleType"
+      },
+      "PortfolioCoverage": {
+        "properties": {
+          "account_count": {
+            "type": "integer",
+            "title": "Account Count"
+          },
+          "position_count": {
+            "type": "integer",
+            "title": "Position Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account_count",
+          "position_count"
+        ],
+        "title": "PortfolioCoverage"
+      },
+      "PortfolioData": {
+        "properties": {
+          "profile_id": {
+            "type": "integer",
+            "title": "Profile Id"
+          },
+          "profile_name": {
+            "type": "string",
+            "title": "Profile Name"
+          },
+          "base_currency": {
+            "type": "string",
+            "title": "Base Currency"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/PositionSchema"
+            },
+            "type": "array",
+            "title": "Positions"
+          },
+          "latest_snapshot_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Snapshot At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "profile_id",
+          "profile_name",
+          "base_currency",
+          "revision",
+          "positions",
+          "latest_snapshot_at"
+        ],
+        "title": "PortfolioData"
+      },
+      "PortfolioImportRequest": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "preview",
+              "confirm"
+            ],
+            "title": "Mode",
+            "default": "preview"
+          },
+          "csv_content": {
+            "type": "string",
+            "maxLength": 2000000,
+            "minLength": 1,
+            "title": "Csv Content"
+          },
+          "preview_token": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Token"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "csv_content"
+        ],
+        "title": "PortfolioImportRequest"
+      },
+      "PortfolioResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PortfolioData"
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "calculated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Calculated At"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/PortfolioCoverage"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "methodology_version": {
+            "type": "string",
+            "const": "portfolio-facts-v1",
+            "title": "Methodology Version",
+            "default": "portfolio-facts-v1"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "as_of",
+          "calculated_at",
+          "coverage",
+          "warnings"
+        ],
+        "title": "PortfolioResponse"
+      },
+      "PositionInputSchema-Input": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "account_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Account Name"
+          },
+          "institution": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Institution"
+          },
+          "account_currency": {
+            "type": "string",
+            "maxLength": 3,
+            "minLength": 3,
+            "title": "Account Currency",
+            "default": "CNY"
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Code"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "instrument_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InstrumentType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "market": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Market"
+          },
+          "instrument_currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 3,
+                "minLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Currency"
+          },
+          "asset_class": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssetClass"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "manual_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manual Value"
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account_name",
+          "code",
+          "market",
+          "as_of"
+        ],
+        "title": "PositionInputSchema"
+      },
+      "PositionInputSchema-Output": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "account_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Account Name"
+          },
+          "institution": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Institution"
+          },
+          "account_currency": {
+            "type": "string",
+            "maxLength": 3,
+            "minLength": 3,
+            "title": "Account Currency",
+            "default": "CNY"
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Code"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "instrument_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InstrumentType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "market": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Market"
+          },
+          "instrument_currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 3,
+                "minLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Currency"
+          },
+          "asset_class": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssetClass"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "manual_value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manual Value"
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account_name",
+          "code",
+          "market",
+          "as_of"
+        ],
+        "title": "PositionInputSchema"
+      },
+      "PositionSchema": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "account_id": {
+            "type": "integer",
+            "title": "Account Id"
+          },
+          "account_name": {
+            "type": "string",
+            "title": "Account Name"
+          },
+          "institution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Institution"
+          },
+          "account_currency": {
+            "type": "string",
+            "title": "Account Currency"
+          },
+          "instrument_id": {
+            "type": "integer",
+            "title": "Instrument Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "instrument_type": {
+            "$ref": "#/components/schemas/InstrumentType"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          },
+          "instrument_currency": {
+            "type": "string",
+            "title": "Instrument Currency"
+          },
+          "asset_class": {
+            "$ref": "#/components/schemas/AssetClass"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "manual_value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manual Value"
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "account_id",
+          "account_name",
+          "institution",
+          "account_currency",
+          "instrument_id",
+          "code",
+          "name",
+          "instrument_type",
+          "market",
+          "instrument_currency",
+          "asset_class",
+          "region",
+          "quantity",
+          "manual_value",
+          "cost",
+          "as_of"
+        ],
+        "title": "PositionSchema"
+      },
+      "PositionValuationSchema": {
+        "properties": {
+          "position_id": {
+            "type": "integer",
+            "title": "Position Id"
+          },
+          "instrument_id": {
+            "type": "integer",
+            "title": "Instrument Id"
+          },
+          "account_name": {
+            "type": "string",
+            "title": "Account Name"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "instrument_type": {
+            "$ref": "#/components/schemas/InstrumentType"
+          },
+          "asset_class": {
+            "$ref": "#/components/schemas/AssetClass"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "weight": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight"
+          },
+          "valuation_source": {
+            "$ref": "#/components/schemas/ValuationSource"
+          },
+          "value_as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value As Of"
+          }
+        },
+        "type": "object",
+        "required": [
+          "position_id",
+          "instrument_id",
+          "account_name",
+          "code",
+          "name",
+          "instrument_type",
+          "asset_class",
+          "value",
+          "weight",
+          "valuation_source",
+          "value_as_of"
+        ],
+        "title": "PositionValuationSchema"
+      },
+      "RefreshResultSchema": {
+        "properties": {
+          "instrument_id": {
+            "type": "integer",
+            "title": "Instrument Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RefreshStatus"
+          },
+          "accepted_rows": {
+            "type": "integer",
+            "title": "Accepted Rows"
+          },
+          "written_rows": {
+            "type": "integer",
+            "title": "Written Rows"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "instrument_id",
+          "code",
+          "status",
+          "accepted_rows",
+          "written_rows",
+          "error_code",
+          "error_message"
+        ],
+        "title": "RefreshResultSchema"
+      },
+      "RefreshStatus": {
+        "type": "string",
+        "enum": [
+          "success",
+          "error",
+          "skipped"
+        ],
+        "title": "RefreshStatus"
+      },
+      "ReplacePoliciesRequest": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyRuleInput"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Rules"
+          }
+        },
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "rules"
+        ],
+        "title": "ReplacePoliciesRequest"
+      },
+      "ReplacePositionsRequest": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/PositionInputSchema-Input"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "title": "Positions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "positions"
+        ],
+        "title": "ReplacePositionsRequest"
+      },
+      "RiskAnalysisSchema": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/RiskCalculationStatus"
+          },
+          "portfolio_as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Portfolio As Of"
+          },
+          "market_data_as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Data As Of"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/PositionValuationSchema"
+            },
+            "type": "array",
+            "title": "Positions"
+          },
+          "instrument_exposures": {
+            "items": {
+              "$ref": "#/components/schemas/ExposureSchema"
+            },
+            "type": "array",
+            "title": "Instrument Exposures"
+          },
+          "asset_class_exposures": {
+            "items": {
+              "$ref": "#/components/schemas/ExposureSchema"
+            },
+            "type": "array",
+            "title": "Asset Class Exposures"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/RiskCoverageSchema"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/HistoricalMetricsSchema"
+          },
+          "correlations": {
+            "items": {
+              "$ref": "#/components/schemas/CorrelationEntrySchema"
+            },
+            "type": "array",
+            "title": "Correlations"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/RiskEvidenceSchema"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          },
+          "methodology_version": {
+            "type": "string",
+            "const": "historical-risk-v1",
+            "title": "Methodology Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "portfolio_as_of",
+          "market_data_as_of",
+          "positions",
+          "instrument_exposures",
+          "asset_class_exposures",
+          "coverage",
+          "metrics",
+          "correlations",
+          "evidence",
+          "assumptions",
+          "limitations",
+          "methodology_version"
+        ],
+        "title": "RiskAnalysisSchema"
+      },
+      "RiskCalculationStatus": {
+        "type": "string",
+        "enum": [
+          "available",
+          "unknown",
+          "all_cash"
+        ],
+        "title": "RiskCalculationStatus"
+      },
+      "RiskCoverageSchema": {
+        "properties": {
+          "total_positions": {
+            "type": "integer",
+            "title": "Total Positions"
+          },
+          "valued_positions": {
+            "type": "integer",
+            "title": "Valued Positions"
+          },
+          "historical_positions": {
+            "type": "integer",
+            "title": "Historical Positions"
+          },
+          "known_portfolio_value": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Known Portfolio Value"
+          },
+          "valued_position_ratio": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Valued Position Ratio"
+          },
+          "historical_value_ratio": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Historical Value Ratio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_positions",
+          "valued_positions",
+          "historical_positions",
+          "known_portfolio_value",
+          "valued_position_ratio",
+          "historical_value_ratio"
+        ],
+        "title": "RiskCoverageSchema"
+      },
+      "RiskEvidenceCode": {
+        "type": "string",
+        "enum": [
+          "empty_portfolio",
+          "incomplete_valuation",
+          "missing_history",
+          "stale_history",
+          "refresh_failed",
+          "insufficient_aligned_history",
+          "zero_variance_correlation",
+          "mixed_valuation_dates"
+        ],
+        "title": "RiskEvidenceCode"
+      },
+      "RiskEvidenceSchema": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/RiskEvidenceCode"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Id"
+          },
+          "instrument_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "RiskEvidenceSchema"
+      },
+      "RiskFindingEventSchema": {
+        "properties": {
+          "finding_key": {
+            "type": "string",
+            "title": "Finding Key"
+          },
+          "dimension": {
+            "type": "string",
+            "title": "Dimension"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "current_value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Value"
+          },
+          "boundary_low": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boundary Low"
+          },
+          "boundary_high": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boundary High"
+          },
+          "contributor_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contributor Key"
+          },
+          "contributor_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contributor Label"
+          },
+          "policy_rule_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Rule Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "finding_key",
+          "dimension",
+          "state",
+          "title",
+          "message",
+          "current_value",
+          "boundary_low",
+          "boundary_high",
+          "contributor_key",
+          "contributor_label",
+          "policy_rule_id"
+        ],
+        "title": "RiskFindingEventSchema"
+      },
+      "RiskResponse": {
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskSnapshotData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "calculated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Calculated At"
+          },
+          "coverage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskCoverageSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "methodology_version": {
+            "type": "string",
+            "const": "historical-risk-v1",
+            "title": "Methodology Version",
+            "default": "historical-risk-v1"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "as_of",
+          "calculated_at",
+          "coverage",
+          "warnings"
+        ],
+        "title": "RiskResponse"
+      },
+      "RiskSnapshotData": {
+        "properties": {
+          "snapshot_id": {
+            "type": "integer",
+            "title": "Snapshot Id"
+          },
+          "portfolio_revision": {
+            "type": "integer",
+            "title": "Portfolio Revision"
+          },
+          "is_current": {
+            "type": "boolean",
+            "title": "Is Current"
+          },
+          "stale_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Stale Reasons"
+          },
+          "analysis": {
+            "$ref": "#/components/schemas/RiskAnalysisSchema"
+          },
+          "evaluation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PolicyEvaluationSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "snapshot_id",
+          "portfolio_revision",
+          "is_current",
+          "stale_reasons",
+          "analysis"
+        ],
+        "title": "RiskSnapshotData"
+      },
+      "RiskState": {
+        "type": "string",
+        "enum": [
+          "unknown",
+          "within",
+          "watch",
+          "breached"
+        ],
+        "title": "RiskState"
+      },
+      "ScenarioComparisonCoverage": {
+        "properties": {
+          "before": {
+            "$ref": "#/components/schemas/RiskCoverageSchema"
+          },
+          "after": {
+            "$ref": "#/components/schemas/RiskCoverageSchema"
+          }
+        },
+        "type": "object",
+        "required": [
+          "before",
+          "after"
+        ],
+        "title": "ScenarioComparisonCoverage"
+      },
+      "ScenarioComparisonData": {
+        "properties": {
+          "scenario_id": {
+            "type": "integer",
+            "title": "Scenario Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "base_portfolio_revision": {
+            "type": "integer",
+            "title": "Base Portfolio Revision"
+          },
+          "candidate_instrument_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Instrument Id"
+          },
+          "policy_revision": {
+            "type": "integer",
+            "title": "Policy Revision"
+          },
+          "operation_count": {
+            "type": "integer",
+            "title": "Operation Count"
+          },
+          "operations": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioOperationSchema"
+            },
+            "type": "array",
+            "title": "Operations"
+          },
+          "comparison_window": {
+            "$ref": "#/components/schemas/ComparisonWindowSchema"
+          },
+          "before": {
+            "$ref": "#/components/schemas/ScenarioSideSchema"
+          },
+          "after": {
+            "$ref": "#/components/schemas/ScenarioSideSchema"
+          },
+          "stress_assumptions": {
+            "items": {
+              "$ref": "#/components/schemas/StressAssumptionSchema"
+            },
+            "type": "array",
+            "title": "Stress Assumptions"
+          },
+          "total_estimated_cost": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Total Estimated Cost"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ScenarioJudgmentSchema"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "methodology_version": {
+            "type": "string",
+            "const": "scenario-comparison-v1",
+            "title": "Methodology Version"
+          },
+          "comparison_id": {
+            "type": "integer",
+            "title": "Comparison Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_id",
+          "name",
+          "base_portfolio_revision",
+          "candidate_instrument_id",
+          "policy_revision",
+          "operation_count",
+          "operations",
+          "comparison_window",
+          "before",
+          "after",
+          "stress_assumptions",
+          "total_estimated_cost",
+          "summary",
+          "warnings",
+          "methodology_version",
+          "comparison_id"
+        ],
+        "title": "ScenarioComparisonData"
+      },
+      "ScenarioComparisonResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ScenarioComparisonData"
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "calculated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Calculated At"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/ScenarioComparisonCoverage"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "methodology_version": {
+            "type": "string",
+            "const": "scenario-comparison-v1",
+            "title": "Methodology Version",
+            "default": "scenario-comparison-v1"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "as_of",
+          "calculated_at",
+          "coverage",
+          "warnings"
+        ],
+        "title": "ScenarioComparisonResponse"
+      },
+      "ScenarioJudgmentSchema": {
+        "properties": {
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Confidence"
+          },
+          "improvements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Improvements"
+          },
+          "worsenings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Worsenings"
+          },
+          "objections": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Objections"
+          }
+        },
+        "type": "object",
+        "required": [
+          "confidence",
+          "improvements",
+          "worsenings",
+          "objections"
+        ],
+        "title": "ScenarioJudgmentSchema"
+      },
+      "ScenarioListCoverage": {
+        "properties": {
+          "scenario_count": {
+            "type": "integer",
+            "title": "Scenario Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_count"
+        ],
+        "title": "ScenarioListCoverage"
+      },
+      "ScenarioListData": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioSummarySchema"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "ScenarioListData"
+      },
+      "ScenarioListResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ScenarioListData"
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "calculated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Calculated At"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/ScenarioListCoverage"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "methodology_version": {
+            "type": "string",
+            "const": "scenario-comparison-v1",
+            "title": "Methodology Version",
+            "default": "scenario-comparison-v1"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "calculated_at",
+          "coverage",
+          "warnings"
+        ],
+        "title": "ScenarioListResponse"
+      },
+      "ScenarioOperationSchema": {
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "title": "Sequence"
+          },
+          "operation_type": {
+            "$ref": "#/components/schemas/ScenarioOperationType"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Id"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "target_weight": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Weight"
+          },
+          "estimated_cost": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Estimated Cost"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sequence",
+          "operation_type",
+          "instrument_id",
+          "amount",
+          "target_weight",
+          "estimated_cost"
+        ],
+        "title": "ScenarioOperationSchema"
+      },
+      "ScenarioOperationType": {
+        "type": "string",
+        "enum": [
+          "no_action",
+          "buy",
+          "sell",
+          "set_amount",
+          "set_target_weight"
+        ],
+        "title": "ScenarioOperationType"
+      },
+      "ScenarioPolicySchema": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/RiskState"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyFindingSchema"
+            },
+            "type": "array",
+            "title": "Findings"
+          },
+          "methodology_version": {
+            "type": "string",
+            "title": "Methodology Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "findings",
+          "methodology_version"
+        ],
+        "title": "ScenarioPolicySchema"
+      },
+      "ScenarioSideSchema": {
+        "properties": {
+          "analysis": {
+            "$ref": "#/components/schemas/RiskAnalysisSchema"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/ScenarioPolicySchema"
+          },
+          "stressed_value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stressed Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "analysis",
+          "policy",
+          "stressed_value"
+        ],
+        "title": "ScenarioSideSchema"
+      },
+      "ScenarioSummarySchema": {
+        "properties": {
+          "scenario_id": {
+            "type": "integer",
+            "title": "Scenario Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "base_portfolio_revision": {
+            "type": "integer",
+            "title": "Base Portfolio Revision"
+          },
+          "candidate_instrument_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Instrument Id"
+          },
+          "operation_count": {
+            "type": "integer",
+            "title": "Operation Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_id",
+          "name",
+          "status",
+          "base_portfolio_revision",
+          "candidate_instrument_id",
+          "operation_count",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ScenarioSummarySchema"
+      },
+      "StressAssumptionInput": {
+        "properties": {
+          "asset_class": {
+            "$ref": "#/components/schemas/AssetClass"
+          },
+          "shock": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 0.0,
+                "exclusiveMinimum": -1.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,8}0*$"
+              }
+            ],
+            "title": "Shock"
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_class",
+          "shock"
+        ],
+        "title": "StressAssumptionInput"
+      },
+      "StressAssumptionSchema": {
+        "properties": {
+          "asset_class": {
+            "$ref": "#/components/schemas/AssetClass"
+          },
+          "shock": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Shock"
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_class",
+          "shock"
+        ],
+        "title": "StressAssumptionSchema"
+      },
+      "UpdateWatchlistItemRequest": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Tags"
+          }
+        },
+        "type": "object",
+        "title": "UpdateWatchlistItemRequest"
+      },
+      "UserDataExportResponse": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "const": "tickeye-user-data-v1",
+            "title": "Schema Version",
+            "default": "tickeye-user-data-v1"
+          },
+          "exported_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Exported At"
+          },
+          "data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Data"
+          },
+          "excluded_data": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Excluded Data"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exported_at",
+          "data",
+          "excluded_data",
+          "warnings"
+        ],
+        "title": "UserDataExportResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ValidationIssueSchema": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "row": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Row"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "field",
+          "row"
+        ],
+        "title": "ValidationIssueSchema"
+      },
+      "ValuationSource": {
+        "type": "string",
+        "enum": [
+          "market_data",
+          "manual_value",
+          "cash_balance",
+          "zero_quantity",
+          "unavailable"
+        ],
+        "title": "ValuationSource"
+      },
+      "WatchlistCoverage": {
+        "properties": {
+          "watchlist_count": {
+            "type": "integer",
+            "title": "Watchlist Count"
+          },
+          "item_count": {
+            "type": "integer",
+            "title": "Item Count"
+          },
+          "held_item_count": {
+            "type": "integer",
+            "title": "Held Item Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "watchlist_count",
+          "item_count",
+          "held_item_count"
+        ],
+        "title": "WatchlistCoverage"
+      },
+      "WatchlistData": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/WatchlistSchema"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "WatchlistData"
+      },
+      "WatchlistItemInput": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "instrument_type": {
+            "$ref": "#/components/schemas/InstrumentType"
+          },
+          "market": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Market"
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 3,
+            "minLength": 3,
+            "title": "Currency",
+            "default": "CNY"
+          },
+          "asset_class": {
+            "$ref": "#/components/schemas/AssetClass"
+          },
+          "region": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Region"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Tags"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "instrument_type",
+          "market",
+          "asset_class",
+          "region"
+        ],
+        "title": "WatchlistItemInput"
+      },
+      "WatchlistItemSchema": {
+        "properties": {
+          "item_id": {
+            "type": "integer",
+            "title": "Item Id"
+          },
+          "instrument_id": {
+            "type": "integer",
+            "title": "Instrument Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "instrument_type": {
+            "$ref": "#/components/schemas/InstrumentType"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "asset_class": {
+            "$ref": "#/components/schemas/AssetClass"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "held": {
+            "type": "boolean",
+            "title": "Held"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_id",
+          "instrument_id",
+          "code",
+          "name",
+          "instrument_type",
+          "market",
+          "currency",
+          "asset_class",
+          "region",
+          "reason",
+          "tags",
+          "held",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "WatchlistItemSchema"
+      },
+      "WatchlistResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/WatchlistData"
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "calculated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Calculated At"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/WatchlistCoverage"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "methodology_version": {
+            "type": "string",
+            "const": "user-watchlists-v1",
+            "title": "Methodology Version",
+            "default": "user-watchlists-v1"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "calculated_at",
+          "coverage",
+          "warnings"
+        ],
+        "title": "WatchlistResponse"
+      },
+      "WatchlistSchema": {
+        "properties": {
+          "watchlist_id": {
+            "type": "integer",
+            "title": "Watchlist Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/WatchlistItemSchema"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "watchlist_id",
+          "name",
+          "items",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "WatchlistSchema"
       }
     }
   }
