@@ -1,6 +1,7 @@
 # TickEye 基金监控项目依赖
 
-# Python 版本要求: >= 3.8 (推荐 3.9+)
+# Python 版本: 3.13.17（见 .python-version）
+certifi>=2026.10.19     # 修复 emSign CA 信任问题
 
 # 核心数据获取
 akshare>=1.12.0          # 基金数据获取 (金融数据接口)

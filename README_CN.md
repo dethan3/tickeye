@@ -21,7 +21,7 @@
 
 | 组件         | 技术/工具                    |
 |-------------|------------------------------|
-| 编程语言      | Python 3.8+                  |
+| 编程语言      | Python 3.13.17                  |
 | 数据获取      | AkShare API                   |
 | 数据处理      | pandas                        |
 | HTTP 客户端   | requests                      |
@@ -33,7 +33,7 @@
 
 ### 环境要求
 
-- Python 3.8 或更高版本
+- Python 3.13.17（见 `.python-version`）
 - 互联网连接（用于 API 访问）
 
 ### 1. 克隆仓库
@@ -162,3 +162,9 @@ python fund_analysis.py 7
 ## 📞 联系
 
 如有问题或建议，请通过 GitHub Issues 联系。
+
+## Security maintenance / 安全更新
+
+Use pip >=26.2.2 and certifi >=2026.10.19. For an existing environment, first follow the checksum-verified pip bootstrap in .github/workflows/daily-fund-monitor.yml, then install requirements.txt. Keep OS CA certificates updated. The optional TypeScript bridge uses Node.js 22.23.4 or a newer 22.x patch (see .nvmrc).
+
+For the optional TypeScript bridge, use pnpm 10.28.2 and set PYTHON_BIN to the absolute path of this project's updated virtual-environment Python before launching it. The unused pymport dependency was removed because it downloaded a separate outdated Python/pip distribution.

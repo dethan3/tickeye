@@ -21,7 +21,7 @@
 
 | Component         | Tech / Tool                  |
 |------------------|------------------------------|
-| Language          | Python 3.8+                  |
+| Language          | Python 3.13.17                  |
 | Data Source       | AkShare API                   |
 | Data Processing   | pandas                        |
 | HTTP Client       | requests                      |
@@ -33,7 +33,7 @@
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.13.17 (see `.python-version`)
 - Internet connection for API access
 
 ### 1. Clone the Repository
@@ -136,3 +136,8 @@ The tool provides a comprehensive report with:
 ## 📄 License
 
 [MIT License](LICENSE)
+## Security maintenance / 安全更新
+
+Use pip >=26.2.2 and certifi >=2026.10.19. For an existing environment, first follow the checksum-verified pip bootstrap in .github/workflows/daily-fund-monitor.yml, then install requirements.txt. Keep OS CA certificates updated. The optional TypeScript bridge uses Node.js 22.23.4 or a newer 22.x patch (see .nvmrc).
+
+For the optional TypeScript bridge, use pnpm 10.28.2 and set PYTHON_BIN to the absolute path of this project's updated virtual-environment Python before launching it. The unused pymport dependency was removed because it downloaded a separate outdated Python/pip distribution.
